@@ -7,18 +7,21 @@ use Illuminate\Http\Request;
 
 class StanjeUredjajaController extends Controller
 {
+    // 1. Prikaz svih stanja (npr. istorija svih promena u sistemu)
     public function index()
     {
-        return response()->json(StanjeUredjaja::with('uredjaj')->get());
+        return response()->json(StanjeUredjaja::with(['uredjaj', 'soba'])->get());
     }
 
+    // 2. Kreiranje novog stanja (npr. kada se doda novi uređaj u sobu)
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nazivUredjaja' => 'required|string|max:255',
-            'ukljucen' => 'required|boolean',
-            'podesavanja' => 'nullable|string',
-            'uredjaj_id' => 'required|exists:uredjaj,idUredjaj',
+            'nazivUredjaja' => 'required|string',
+            'ukljucen'      => 'required|boolean',
+            'podesavanja'   => 'required|array', // Laravel cast-uje niz u JSON
+            'uredjaj_id'    => 'required|exists:uredjaj,idUredjaj',
+            'soba_id'       => 'required|exists:soba,rbSoba',
         ]);
 
         $stanje = StanjeUredjaja::create($validated);
@@ -26,33 +29,40 @@ class StanjeUredjajaController extends Controller
         return response()->json($stanje, 201);
     }
 
-    public function show($id)
-    {
-        $stanje = StanjeUredjaja::with('uredjaj')->findOrFail($id);
-        return response()->json($stanje);
-    }
-
+    // 3. Promena stanja (KOMANDA: npr. upali svetlo ili promeni temperaturu)
     public function update(Request $request, $id)
     {
         $stanje = StanjeUredjaja::findOrFail($id);
 
+        // Dozvoljavamo delimično ažuriranje (samo status ili samo jedan parametar u JSON-u)
         $validated = $request->validate([
-            'nazivUredjaja' => 'sometimes|string|max:255',
-            'ukljucen' => 'sometimes|boolean',
-            'podesavanja' => 'nullable|string',
-            'uredjaj_id' => 'sometimes|exists:uredjaj,idUredjaj',
+            'ukljucen'    => 'sometimes|boolean',
+            'podesavanja' => 'sometimes|array',
         ]);
 
-        $stanje->update($validated);
+        // Ako šalješ nova podešavanja, spajamo ih sa starim da ne obrišemo postojeće parametre
+        if ($request->has('podesavanja')) {
+            $novaPodesavanja = array_merge($stanje->podesavanja ?? [], $request->podesavanja);
+            $stanje->podesavanja = $novaPodesavanja;
+        }
 
-        return response()->json($stanje);
+        if ($request->has('ukljucen')) {
+            $stanje->ukljucen = $request->ukljucen;
+        }
+
+        $stanje->save();
+
+        return response()->json([
+            'message' => 'Komanda izvršena.',
+            'novo_stanje' => $stanje
+        ]);
     }
 
+    // 4. Brisanje stanja
     public function destroy($id)
     {
         $stanje = StanjeUredjaja::findOrFail($id);
         $stanje->delete();
-
-        return response()->json(['message' => 'Stanje uređaja obrisano']);
+        return response()->json(['message' => 'Stanje obrisano.']);
     }
 }

@@ -8,17 +8,12 @@ class CreateSobaTable extends Migration
 {
     public function up()
     {
+        Schema::dropIfExists('soba');
         Schema::create('soba', function (Blueprint $table) {
             $table->id('rbSoba');
             $table->string('nazivSobe');
-
-            // FK ka stan
             $table->unsignedBigInteger('stan_id');
-            $table->foreign('stan_id')
-                  ->references('idStan')
-                  ->on('stan')
-                  ->onDelete('cascade');
-
+            $table->foreign('stan_id')->references('idStan')->on('stan')->onDelete('cascade');
             $table->timestamps();
         });
     }

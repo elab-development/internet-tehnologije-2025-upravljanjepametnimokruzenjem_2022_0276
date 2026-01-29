@@ -9,27 +9,27 @@ class StanController extends Controller
 {
     public function index()
     {
-        return response()->json(Stan::with('korisnik')->get());
+        // Vraćamo stanove sa informacijom o vlasniku (vlasnik je relacija iz modela)
+        return response()->json(Stan::with('vlasnik')->get());
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'adresa' => 'required|string|max:255',
+            'adresa' => 'required|string',
             'brojStana' => 'required|integer',
             'sprat' => 'required|integer',
             'vlasnik_id' => 'required|exists:korisnik,idKorisnik',
         ]);
 
         $stan = Stan::create($validated);
-
         return response()->json($stan, 201);
     }
 
     public function show($id)
     {
-        $stan = Stan::with('korisnik', 'sobe')->findOrFail($id);
-        return response()->json($stan);
+        // Koristimo idStan jer je to PK
+        return response()->json(Stan::with(['vlasnik', 'sobe'])->findOrFail($id));
     }
 
     public function update(Request $request, $id)
@@ -55,4 +55,19 @@ class StanController extends Controller
 
         return response()->json(['message' => 'Stan obrisan']);
     }
+
+    public function dodajStanara(Request $request, $idStan)
+    {
+        $stan = Stan::findOrFail($idStan);
+
+        $request->validate([
+            'korisnik_id' => 'required|exists:korisnik,idKorisnik'
+        ]);
+
+        // attach dodaje red u pivot tabelu korisnik_stan
+        $stan->korisnici()->attach($request->korisnik_id);
+
+        return response()->json(['message' => 'Stanar uspešno dodat u stan.']);
+    }
+
 }

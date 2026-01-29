@@ -10,28 +10,32 @@ class Uredjaj extends Model
     use HasFactory;
 
     protected $table = 'uredjaj';
+    
+    // Na šemi je primarni ključ označen kao idUredjaj
+    protected $primaryKey = 'idUredjaj';
 
     protected $fillable = [
-        'naziv',
-        'tip',        // npr. TV, Frižider, Klima...
-        'soba_id',    // strani ključ prema sobi
+        'marka',        // String na šemi
+        'model',        // String na šemi
+        'tipUredjaja',  // String na šemi
     ];
 
-    // Relacija: uređaj pripada jednoj sobi
-    public function soba()
-    {
-        return $this->belongsTo(Soba::class);
-    }
-
-    // Relacija: uređaj može imati više stanja (istorija)
+    /**
+     * Relacija: "odnosi se na" (0,*)
+     * Prema šemi, jedan uređaj može imati više zabeleženih stanja (istorija).
+     * Veza ide od StanjeUredjaja ka Uredjaj.
+     */
     public function stanja()
     {
-        return $this->hasMany(StanjeUredjaja::class);
+        // Spoljni ključ u tabeli stanje_uredjaja je uredjaj_id
+        return $this->hasMany(StanjeUredjaja::class, 'uredjaj_id', 'idUredjaj');
     }
 
-    // Relacija: poslednje stanje uređaja (ako želiš quick access)
-    public function poslednjeStanje()
+    /**
+     * Pomoćna relacija za dobijanje trenutno aktivnog stanja.
+     */
+    public function trenutnoStanje()
     {
-        return $this->hasOne(StanjeUredjaja::class)->latestOfMany();
+        return $this->hasOne(StanjeUredjaja::class, 'uredjaj_id', 'idUredjaj')->latestOfMany();
     }
 }

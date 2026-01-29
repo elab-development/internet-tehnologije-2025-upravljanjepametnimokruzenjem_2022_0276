@@ -46,17 +46,17 @@ class KorisnikController extends Controller
         $validated = $request->validate([
             'ime' => 'sometimes|string|max:255',
             'prezime' => 'sometimes|string|max:255',
+            // Ovde idKorisnik mora biti naveden da ignorisao trenutnog korisnika pri proveri unique
             'username' => 'sometimes|string|unique:korisnik,username,' . $id . ',idKorisnik',
-            'password' => 'sometimes|string|min:6',
-            'uloga' => 'sometimes|in:dete,obican,admin', // Dodato
+            'password' => 'sometimes|string|min:3',
+            'uloga' => 'sometimes|in:dete,obican,admin',
         ]);
 
         if (isset($validated['password'])) {
-            $validated['password'] = bcrypt($validated['password']);
+            $validated ['password'] = bcrypt($validated['password']);
         }
 
         $korisnik->update($validated);
-
         return response()->json($korisnik);
     }
 

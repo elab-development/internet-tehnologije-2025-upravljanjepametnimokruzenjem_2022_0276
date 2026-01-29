@@ -8,19 +8,14 @@ class CreateStanTable extends Migration
 {
     public function up()
     {
+        Schema::dropIfExists('stan');
         Schema::create('stan', function (Blueprint $table) {
             $table->id('idStan');
             $table->string('adresa');
             $table->integer('brojStana');
             $table->integer('sprat');
-
-            // FK ka korisnik
             $table->unsignedBigInteger('vlasnik_id');
-            $table->foreign('vlasnik_id')
-                  ->references('idKorisnik')
-                  ->on('korisnik')
-                  ->onDelete('cascade');
-
+            $table->foreign('vlasnik_id')->references('idKorisnik')->on('korisnik')->onDelete('cascade');
             $table->timestamps();
         });
     }

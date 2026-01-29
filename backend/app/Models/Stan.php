@@ -9,23 +9,33 @@ class Stan extends Model
 {
     use HasFactory;
 
+    // U modelu Stan.php
+
     protected $table = 'stan';
+    protected $primaryKey = 'idStan';
 
     protected $fillable = [
-        'naziv',
         'adresa',
-        'korisnik_id', // strani ključ prema korisniku
+        'brojStana',
+        'sprat',
+        'vlasnik_id' // FK ka Korisniku za vezu "je vlasnik"
     ];
 
-    // Relacija: stan pripada korisniku
-    public function korisnik()
+    // Veza "ima vlasnika": Stan ima jednog vlasnika (N:1)
+    public function vlasnik()
     {
-        return $this->belongsTo(Korisnik::class);
+        return $this->belongsTo(Korisnik::class, 'vlasnik_id', 'idKorisnik');
     }
 
-    // Relacija: stan ima više soba
+    // Veza "ima": Stan ima više korisnika/stanara (M:N)
+    public function korisnici()
+    {
+        return $this->belongsToMany(Korisnik::class, 'korisnik_stan', 'stan_id', 'korisnik_id');
+    }
+
+    // Veza "ima" ka Sobama (Kompozicija na šemi)
     public function sobe()
     {
-        return $this->hasMany(Soba::class);
+        return $this->hasMany(Soba::class, 'stan_id', 'idStan');
     }
 }

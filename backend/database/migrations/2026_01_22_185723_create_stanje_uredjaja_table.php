@@ -8,19 +8,16 @@ class CreateStanjeUredjajaTable extends Migration
 {
     public function up()
     {
+        Schema::dropIfExists('stanje_uredjaja');
         Schema::create('stanje_uredjaja', function (Blueprint $table) {
             $table->id('rbStanje');
             $table->string('nazivUredjaja');
             $table->boolean('ukljucen');
-            $table->string('podesavanja')->nullable();
-
-            // FK ka uredjaj
+            $table->string(column: 'podesavanja');
             $table->unsignedBigInteger('uredjaj_id');
-            $table->foreign('uredjaj_id')
-                  ->references('idUredjaj')
-                  ->on('uredjaj')
-                  ->onDelete('cascade');
-
+            $table->unsignedBigInteger('soba_id');
+            $table->foreign('uredjaj_id')->references('idUredjaj')->on('uredjaj')->onDelete('cascade');
+            $table->foreign('soba_id')->references('rbSoba')->on('soba')->onDelete('cascade');
             $table->timestamps();
         });
     }
