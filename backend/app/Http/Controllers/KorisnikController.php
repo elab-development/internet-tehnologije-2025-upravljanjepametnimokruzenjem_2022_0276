@@ -21,6 +21,7 @@ class KorisnikController extends Controller
             'prezime' => 'required|string|max:255',
             'username' => 'required|string|unique:korisnik,username',
             'password' => 'required|string|min:6',
+            'uloga' => 'required|in:dete,obican,admin', // Dodato
         ]);
 
         $validated['password'] = bcrypt($validated['password']); // heš lozinke
@@ -47,6 +48,7 @@ class KorisnikController extends Controller
             'prezime' => 'sometimes|string|max:255',
             'username' => 'sometimes|string|unique:korisnik,username,' . $id . ',idKorisnik',
             'password' => 'sometimes|string|min:6',
+            'uloga' => 'sometimes|in:dete,obican,admin', // Dodato
         ]);
 
         if (isset($validated['password'])) {

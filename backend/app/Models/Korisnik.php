@@ -16,7 +16,16 @@ class Korisnik extends Model
         'prezime',
         'username',
         'password',
+        'uloga',
     ];
+
+    public function isAdmin() {
+        return $this->uloga === 'admin';
+    }
+
+    public function isDete() {
+        return $this->uloga === 'dete';
+    }
 
     // Relacija: korisnik može imati više stanova
     public function stanovi()

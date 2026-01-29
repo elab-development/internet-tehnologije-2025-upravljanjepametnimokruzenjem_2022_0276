@@ -18,6 +18,10 @@ class StanjeUredjaja extends Model
         'datum_vreme', // kada je stanje zabeleženo
     ];
 
+    protected $casts = [
+        'podesavanje' => 'array',
+    ];
+
     // Relacija: stanje pripada jednom uređaju
     public function uredjaj()
     {
