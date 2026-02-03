@@ -20,9 +20,11 @@ class Korisnik extends Model
         'prezime',
         'username',
         'uloga',
+        'password'
     ];
 
-    protected $hidden = [ 'password',
+    protected $hidden = [ 
+    'password',
     'remember_token',
     'created_at',
     'updated_at'
