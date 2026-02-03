@@ -19,5 +19,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('uredjaji', \App\Http\Controllers\UredjajController::class);
     Route::apiResource('stanja-uredjaja', \App\Http\Controllers\StanjeUredjajaController::class);
 
-    // Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 });
