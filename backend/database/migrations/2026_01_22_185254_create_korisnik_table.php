@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 class CreateKorisnikTable extends Migration
 {
     public function up()
-{
+    {
     Schema::dropIfExists('korisnik'); // Briše staru pre kreiranja
     Schema::create('korisnik', function (Blueprint $table) {
         $table->id('idKorisnik');
@@ -18,8 +18,8 @@ class CreateKorisnikTable extends Migration
         $table->enum('uloga', ['dete', 'obican', 'admin'])->default('obican');
         $table->timestamps();
     });
-}
-
+    }
+    
     public function down()
     {
         Schema::dropIfExists('korisnik');

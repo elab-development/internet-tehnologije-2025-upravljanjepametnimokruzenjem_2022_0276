@@ -1,32 +1,23 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 
-// Test ping ruta
+Route::post('/login', [AuthController::class, 'login']);
+
 Route::get('/ping', function() {
     return response()->json(['message' => 'pong']);
 });
 
-/*
-|--------------------------------------------------------------------------
-| API Routes sa punim namespace-om
-|--------------------------------------------------------------------------
-|
-| Ovo je Laravel 8 sa $namespace=null u RouteServiceProvider
-|
-*/
 
-// CRUD za korisnike
-Route::apiResource('korisnici', \App\Http\Controllers\KorisnikController::class);
+// ZAŠTIĆENE RUTE 
+Route::middleware('auth:sanctum')->group(function () {
 
-// CRUD za stanove
-Route::apiResource('stanovi', \App\Http\Controllers\StanController::class);
+    Route::apiResource('korisnici', \App\Http\Controllers\KorisnikController::class);
+    Route::apiResource('stanovi', \App\Http\Controllers\StanController::class);
+    Route::apiResource('sobe', \App\Http\Controllers\SobaController::class);
+    Route::apiResource('uredjaji', \App\Http\Controllers\UredjajController::class);
+    Route::apiResource('stanja-uredjaja', \App\Http\Controllers\StanjeUredjajaController::class);
 
-// CRUD za sobe
-Route::apiResource('sobe', \App\Http\Controllers\SobaController::class);
-
-// CRUD za uredjaje
-Route::apiResource('uredjaji', \App\Http\Controllers\UredjajController::class);
-
-// CRUD za stanje uredjaja
-Route::apiResource('stanja-uredjaja', \App\Http\Controllers\StanjeUredjajaController::class);
+    // Route::post('/logout', [AuthController::class, 'logout']);
+});

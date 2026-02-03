@@ -19,8 +19,13 @@ class Korisnik extends Model
         'ime',
         'prezime',
         'username',
-        'password',
         'uloga',
+    ];
+
+    protected $hidden = [ 'password',
+    'remember_token',
+    'created_at',
+    'updated_at'
     ];
 
     public function isAdmin()

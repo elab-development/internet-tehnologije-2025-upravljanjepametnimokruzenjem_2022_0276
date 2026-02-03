@@ -34,8 +34,8 @@ class Uredjaj extends Model
     /**
      * Pomoćna relacija za dobijanje trenutno aktivnog stanja.
      */
-    public function trenutnoStanje()
-    {
-        return $this->hasOne(StanjeUredjaja::class, 'uredjaj_id', 'idUredjaj')->latestOfMany();
-    }
+    // public function trenutnoStanje()
+    // {
+    //     return $this->hasOne(StanjeUredjaja::class, 'uredjaj_id', 'idUredjaj')->latestOfMany();
+    // }
 }
