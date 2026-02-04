@@ -20,7 +20,7 @@ const Register = () => {
 
         setLoading(true);
         try {
-            await api.post('/register', formData);
+            const response = await api.post('/register', formData);
             
             if (response.data.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);
