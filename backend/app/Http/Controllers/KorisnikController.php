@@ -48,7 +48,8 @@ class KorisnikController extends Controller
             'prezime' => 'sometimes|string|max:255',
             // Ovde idKorisnik mora biti naveden da ignorisao trenutnog korisnika pri proveri unique
             'username' => 'sometimes|string|unique:korisnik,username,' . $id . ',idKorisnik',
-            'password' => 'sometimes|string|min:3',
+            'password' => 'sometimes|string|min:3
+            ',
             'uloga' => 'sometimes|in:dete,obican,admin',
         ]);
 

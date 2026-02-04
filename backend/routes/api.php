@@ -13,6 +13,10 @@ Route::get('/ping', function() {
 // ZAŠTIĆENE RUTE 
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::get('/me', function (\Illuminate\Http\Request $request) {
+        return $request->user();
+    });
+    
     Route::apiResource('korisnici', \App\Http\Controllers\KorisnikController::class);
     Route::apiResource('stanovi', \App\Http\Controllers\StanController::class);
     Route::apiResource('sobe', \App\Http\Controllers\SobaController::class);
