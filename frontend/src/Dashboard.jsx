@@ -1,99 +1,218 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from './api/axios';
+import Sidebar from './Sidebar';
+import SobaCard from './SobaCard';
+import UredjajCard from './UredjajCard';
+import AddDeviceModal from './AddDeviceModal';
+import DeleteConfirmModal from './DeleteConfirmModal'; // Importuj modal za potvrdu
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
+    const [vlasnikStanovi, setVlasnikStanovi] = useState([]);
+    const [stanarStanovi, setStanarStanovi] = useState([]);
+    const [selectedStan, setSelectedStan] = useState(null);
+    const [selectedSoba, setSelectedSoba] = useState(null);
+    
+    const [showAddModal, setShowAddModal] = useState(false);
+    
+    // State za brisanje uređaja
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deviceToDelete, setDeviceToDelete] = useState(null);
+
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    const fetchStanovi = useCallback(async (currentStanId, currentSobaId) => {
+        try {
+            const res = await api.get('/stanovi');
+            const vlasnik = res.data.vlasnik || [];
+            const stanar = res.data.stanar || [];
+            
+            setVlasnikStanovi(vlasnik);
+            setStanarStanovi(stanar);
+
+            if (currentStanId) {
+                const sviStanovi = [...vlasnik, ...stanar];
+                const svezStan = sviStanovi.find(s => s.idStan === currentStanId);
+                
+                if (svezStan) {
+                    setSelectedStan(svezStan);
+                    if (currentSobaId) {
+                        const svezaSoba = svezStan.sobe.find(so => so.rbSoba === currentSobaId);
+                        if (svezaSoba) setSelectedSoba(svezaSoba);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Greška pri učitavanju stanova:", err);
+        }
+    }, []);
+
     useEffect(() => {
-        const fetchUserData = async () => {
+        const initDashboard = async () => {
             try {
-                // Pozivamo Laravel rutu koju smo dodali u api.php
-                const response = await api.get('/me');
-                setUser(response.data);
+                const userRes = await api.get('/me');
+                setUser(userRes.data);
+                await fetchStanovi();
             } catch (err) {
-                console.error("Greška pri preuzimanju podataka:", err);
-                // Ako token nije validan (401), brišemo sve i pravac login
                 localStorage.clear();
                 navigate('/login');
             } finally {
                 setLoading(false);
             }
         };
+        initDashboard();
+    }, [navigate, fetchStanovi]);
 
-        fetchUserData();
-    }, [navigate]);
-
-    const handleLogout = async () => {
-        // localStorage.clear();
-        // navigate('/login');
-        // Klijentski
-
-        try {
-            await api.post('/logout');
-
-            console.log("Token je obrisan iz baze.");
-        } catch (err) {
-            
-            console.error("Greška pri odjavi na serveru:", err);
-        } finally {
-            localStorage.clear();
-
-            navigate('/login');
-        }
-
-
+    const handleStanSelect = async (stan) => {
+        await fetchStanovi(stan.idStan);
+        setSelectedSoba(null);
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                <div className="text-blue-500 text-xl font-bold animate-pulse">Učitavanje profila...</div>
-            </div>
-        );
-    }
+    const handleSobaSelect = async (soba) => {
+        await fetchStanovi(selectedStan.idStan, soba.rbSoba);
+    };
+
+    const handleToggle = async (stanje) => {
+        try {
+            await api.patch(`/stanja-uredjaja/${stanje.rbStanje}`, { ukljucen: !stanje.ukljucen });
+            await fetchStanovi(selectedStan.idStan, selectedSoba?.rbSoba);
+        } catch (err) { console.error(err); }
+    };
+
+    const handleSettingsChange = async (stanje, novaPodesavanja) => {
+        try {
+            const kompletanJson = { ...stanje.podesavanja, ...novaPodesavanja };
+            await api.patch(`/stanja-uredjaja/${stanje.rbStanje}`, { podesavanja: kompletanJson });
+            await fetchStanovi(selectedStan.idStan, selectedSoba?.rbSoba);
+        } catch (err) { console.error(err); }
+    };
+
+    const handleDeleteUredjaj = async () => {
+        if (!deviceToDelete) return;
+        try {
+            await api.delete(`/stanja-uredjaja/${deviceToDelete.rbStanje}`);
+            setShowDeleteModal(false);
+            setDeviceToDelete(null);
+            await fetchStanovi(selectedStan.idStan, selectedSoba?.rbSoba);
+        } catch (err) {
+            console.error("Greška pri brisanju:", err);
+            alert("Došlo je do greške prilikom brisanja uređaja.");
+        }
+    };
+
+    const handleLogout = async () => {
+        try { await api.post('/logout'); }
+        finally { localStorage.clear(); navigate('/login'); }
+    };
+
+    if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-blue-500 font-bold">Učitavanje...</div>;
 
     return (
-        <div className="min-h-screen bg-slate-900 text-white p-6">
-            {/* Header / Navigacija */}
-            <nav className="max-w-5xl mx-auto flex justify-between items-center bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-xl mb-10">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center font-bold text-xl shadow-lg shadow-blue-500/20">
-                        {user?.ime[0]}{user?.prezime[0]}
-                    </div>
+        <div className="flex h-screen bg-slate-900 text-white overflow-hidden">
+            <Sidebar
+                stanoviVlasnik={vlasnikStanovi}
+                stanoviStanar={stanarStanovi}
+                onStanSelect={handleStanSelect}
+                selectedStanId={selectedStan?.idStan}
+            />
+
+            <div className="flex-1 flex flex-col">
+                <header className="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-slate-800/30">
                     <div>
-                        <h2 className="font-bold text-lg leading-tight">{user?.ime} {user?.prezime}</h2>
-                        <span className="text-slate-400 text-xs uppercase tracking-wider">{user?.uloga}</span>
+                        <h2 className="text-sm text-slate-500 font-bold uppercase tracking-widest">
+                            {selectedSoba ? selectedSoba.nazivSobe : 'Pregled'}
+                        </h2>
+                        <h1 className="text-xl font-bold">{selectedStan?.adresa || 'Izaberite stan'}</h1>
                     </div>
-                </div>
-                <button
-                    onClick={handleLogout}
-                    className="bg-slate-700 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition-all text-sm font-semibold"
-                >
-                    Odjavi se
-                </button>
-            </nav>
+                    <div className="flex items-center gap-6">
+                        <div className="text-right">
+                            <p className="font-bold">{user?.ime} {user?.prezime}</p>
+                            <p className="text-xs text-blue-400 uppercase">{user?.uloga}</p>
+                        </div>
+                        <button onClick={handleLogout} className="bg-slate-700 hover:bg-red-600 px-4 py-2 rounded-xl text-sm font-semibold transition-all">Odjavi se</button>
+                    </div>
+                </header>
 
-            {/* Glavni Sadržaj */}
-            <main className="max-w-5xl mx-auto">
-                <div className="bg-slate-800/50 border border-slate-700 rounded-3xl p-10 text-center">
-                    <h1 className="text-4xl font-black mb-4">
-                        Dobrodošli nazad, <span className="text-blue-400">{user?.ime}</span>!
-                    </h1>
-                </div>
+                <main className="flex-1 overflow-y-auto p-8 bg-slate-900/50">
+                    {selectedStan ? (
+                        <div className="animate-in fade-in duration-500">
+                            {!selectedSoba ? (
+                                <>
+                                    <h1 className="text-4xl font-black mb-10 text-white/90">Sobe</h1>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {selectedStan.sobe?.map(soba => (
+                                            <SobaCard 
+                                                key={soba.rbSoba} 
+                                                soba={soba} 
+                                                onClick={() => handleSobaSelect(soba)} 
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <button 
+                                        onClick={() => setSelectedSoba(null)} 
+                                        className="mb-6 text-slate-400 hover:text-white text-sm flex items-center gap-2 transition-colors"
+                                    >
+                                        ← Nazad na sve sobe
+                                    </button>
+                                    <h1 className="text-4xl font-black mb-10 text-white/90">Uređaji</h1>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {selectedSoba.stanja_uredjaja?.map(stanje => (
+                                            <UredjajCard
+                                                key={stanje.rbStanje}
+                                                stanje={stanje}
+                                                userRole={user?.uloga} 
+                                                onToggle={handleToggle} 
+                                                onChange={handleSettingsChange} 
+                                                onDelete={(device) => { // otvaranje modal dialoga
+                                                    setDeviceToDelete(device);
+                                                    setShowDeleteModal(true);
+                                                }}
+                                            />
+                                        ))}
 
-                {/* Ovde ćemo kasnije dodati grid sa stanovima */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-                    <div className="p-6 border border-dashed border-slate-700 rounded-2xl flex flex-col items-center justify-center text-slate-500">
-                        <p>Ovde će biti lista tvojih stanova...</p>
-                    </div>
-                    <div className="p-6 border border-dashed border-slate-700 rounded-2xl flex flex-col items-center justify-center text-slate-500">
-                        <p>I stanovi gde boraviš...</p>
-                    </div>
-                </div>
-            </main>
+                                        {user?.uloga !== 'dete' && (
+                                            <button 
+                                                onClick={() => setShowAddModal(true)}
+                                                className="border-2 border-dashed border-slate-700 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-500/5 transition-all group min-h-[160px]"
+                                            >
+                                                <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-2xl group-hover:bg-blue-600 transition-colors">
+                                                    +
+                                                </div>
+                                                <span className="text-slate-500 font-bold group-hover:text-blue-400">Dodaj uređaj</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center text-slate-500">
+                            <div className="text-6xl mb-4 text-slate-700">🏠</div>
+                            <p className="text-lg font-medium">Izaberite stan iz menija sa leve strane.</p>
+                        </div>
+                    )}
+                </main>
+            </div>
+
+            {/* MODALI */}
+            <AddDeviceModal 
+                isOpen={showAddModal} 
+                onClose={() => setShowAddModal(false)}
+                rbSoba={selectedSoba?.rbSoba}
+                onDeviceAdded={() => fetchStanovi(selectedStan.idStan, selectedSoba?.rbSoba)}
+            />
+
+            <DeleteConfirmModal
+                isOpen={showDeleteModal}
+                deviceName={deviceToDelete?.nazivUredjaja}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleDeleteUredjaj}
+            />
         </div>
     );
 };

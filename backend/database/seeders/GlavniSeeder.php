@@ -66,7 +66,16 @@ class GlavniSeeder extends Seeder
             'tipUredjaja' => 'Svetlo'
         ]);
 
+        // 4. Kreiraj Uređaje (Katalog) - Dodajemo Grejalicu
+        $grejalicaUredjaj = Uredjaj::create([
+            'marka' => 'Rowenta',
+            'model' => 'Eco Heat 2000',
+            'tipUredjaja' => 'Grejalica'
+        ]);
+
         // 5. Postavi Stanje Uređaja (Povezivanje uređaja i sobe)
+        // mod moze da bude hladjenje ili grejanje
+        //  brzina ventilatora od 1 do 5
         StanjeUredjaja::create([
             'nazivUredjaja' => 'Klima dnevna soba',
             'ukljucen' => true,
@@ -79,15 +88,33 @@ class GlavniSeeder extends Seeder
             'soba_id' => $dnevna->rbSoba
         ]);
 
+
+
+        // Jacina svetla 25, 50, 75, 100
+        // Boja 1, 2, 3, 4, 5
         StanjeUredjaja::create([
             'nazivUredjaja' => 'Glavno svetlo spavaća',
             'ukljucen' => false,
             'podesavanja' => [
-                'intenzitet' => '80%',
-                'boja' => 'Toplo bela'
+                'jacina_svetla' => '50',
+                'boja' => 1
             ],
             'uredjaj_id' => $svetlo->idUredjaj,
             'soba_id' => $spavaca->rbSoba
         ]);
+
+        // 5. Postavi Stanje Uređaja
+        // Dodajemo Grejalicu u Dnevnu Sobu
+        StanjeUredjaja::create([
+            'nazivUredjaja' => 'Pomoćna grejalica dnevna',
+            'ukljucen' => true,
+            'podesavanja' => [
+                'temperatura' => 22,
+                'jacina_grejaca' => 2 // Npr. od 1 do 3
+            ],
+            'uredjaj_id' => $grejalicaUredjaj->idUredjaj,
+            'soba_id' => $dnevna->rbSoba
+        ]);
+
     }
 }

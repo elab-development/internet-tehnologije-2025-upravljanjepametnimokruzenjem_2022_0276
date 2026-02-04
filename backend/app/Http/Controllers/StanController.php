@@ -9,8 +9,21 @@ class StanController extends Controller
 {
     public function index()
     {
-        // Vraćamo stanove sa informacijom o vlasniku (vlasnik je relacija iz modela)
-        return response()->json(Stan::with('vlasnik')->get());
+        $user = auth()->user();
+
+        // Ključno je ugnjezditi sve relacije kroz 'with'
+        $vlasnik = $user->mojiStanoviVlasnik()
+            ->with(['sobe.stanjaUredjaja.uredjaj'])
+            ->get();
+
+        $stanar = $user->stanoviGdeBoravim()
+            ->with(['sobe.stanjaUredjaja.uredjaj'])
+            ->get();
+
+        return response()->json([
+            'vlasnik' => $vlasnik,
+            'stanar' => $stanar
+        ]);
     }
 
     public function store(Request $request)
