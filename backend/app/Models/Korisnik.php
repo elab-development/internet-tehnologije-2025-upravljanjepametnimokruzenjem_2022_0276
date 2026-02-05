@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Foundation\Auth\User as Authenticatable; // OVO JE KLJUČNA IZMENA
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable; // Dodaj i ovo za svaki slučaj
 use Laravel\Sanctum\HasApiTokens;
 
-class Korisnik extends Model
+// Umesto "extends Model", sada koristimo "extends Authenticatable"
+class Korisnik extends Authenticatable 
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'korisnik';
 
-    // Postavljamo idKorisnik kao primarni ključ
     protected $primaryKey = 'idKorisnik';
 
     protected $fillable = [
@@ -24,31 +25,21 @@ class Korisnik extends Model
     ];
 
     protected $hidden = [ 
-    'password',
-    'remember_token',
-    'created_at',
-    'updated_at'
+        'password',
+        'remember_token',
+        'created_at',
+        'updated_at'
     ];
 
-    public function isAdmin()
-    {
-        return $this->uloga === 'admin';
-    }
+    // ... ostatak tvojih metoda (isAdmin, isDete, relacije) ostaje ISTI
+    public function isAdmin() { return $this->uloga === 'admin'; }
+    public function isDete() { return $this->uloga === 'dete'; }
 
-    public function isDete()
-    {
-        return $this->uloga === 'dete';
-    }
-
-    // U modelu Korisnik.php
-
-    // Veza "je vlasnik": Korisnik kao vlasnik više stanova (1:N)
     public function mojiStanoviVlasnik()
     {
         return $this->hasMany(Stan::class, 'vlasnik_id', 'idKorisnik');
     }
 
-    // Veza "ima": Korisnik kao stanar/korisnik stana (M:N)
     public function stanoviGdeBoravim()
     {
         return $this->belongsToMany(Stan::class, 'korisnik_stan', 'korisnik_id', 'stan_id');

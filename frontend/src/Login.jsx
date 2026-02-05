@@ -5,15 +5,17 @@ import api from './api/axios';
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false); 
+    const [loading, setLoading] = useState(false);
+    const [greska, setGreska] = useState("");
 
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (loading) return; 
+        setGreska(""); // Resetuj pre svakog pokušaja
+        if (loading) return;
 
-        setLoading(true); 
+        setLoading(true);
 
         try {
             const response = await api.post('/login', {
@@ -22,13 +24,24 @@ const Login = () => {
             });
 
             localStorage.setItem('access_token', response.data.access_token);
-
             navigate('/dashboard');
         } catch (err) {
             console.error('Greška:', err.response?.data);
-            alert('Greška pri logovanju. Proveri podatke.');
+
+            // Laravel Sanctum/Fortify obično šalje poruku u err.response.data.message
+            // ili direktno u objektu ako je klasična validacija
+            const errorData = err.response?.data;
+
+            if (err.response?.status === 401) {
+                setGreska("Neispravno korisničko ime ili lozinka.");
+            } else if (errorData?.errors) {
+                // Ako ima više validacionih grešaka (npr. prazna polja)
+                setGreska(Object.values(errorData.errors).flat().join(" "));
+            } else {
+                setGreska(errorData?.message || "Došlo je do greške pri prijavi.");
+            }
         } finally {
-            setLoading(false); // Otključaj dugme (bilo da je uspelo ili puklo)
+            setLoading(false);
         }
     };
 
@@ -36,6 +49,12 @@ const Login = () => {
         <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center w-full">
             <form onSubmit={handleSubmit} className="bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-700 w-96">
                 <h2 className="text-2xl font-bold text-white mb-6 text-center">Prijava</h2>
+
+                {greska && (
+                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500 text-sm text-center">
+                        {greska}
+                    </div>
+                )}
 
                 <div className="mb-4">
                     <label className="block text-slate-400 mb-2">Korisničko ime</label>

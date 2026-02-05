@@ -4,8 +4,12 @@ import api from './api/axios';
 import Sidebar from './Sidebar';
 import SobaCard from './SobaCard';
 import UredjajCard from './UredjajCard';
-import AddDeviceModal from './AddDeviceModal';
-import DeleteConfirmModal from './DeleteConfirmModal'; // Importuj modal za potvrdu
+import AddDeviceModal from './modals/AddDeviceModal';
+import DeleteConfirmModal from './modals/DeleteConfirmModal';
+import CreateStanModal from './modals/CreateStanModal';
+import ConfirmDeleteStanModal from './modals/ConfirmDeleteStanModal';
+import EditStanModal from './modals/EditStanModal';
+import ManageStanariModal from './modals/ManageStanariModal';
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -13,12 +17,22 @@ const Dashboard = () => {
     const [stanarStanovi, setStanarStanovi] = useState([]);
     const [selectedStan, setSelectedStan] = useState(null);
     const [selectedSoba, setSelectedSoba] = useState(null);
-    
+
     const [showAddModal, setShowAddModal] = useState(false);
-    
+    const [showCreateStanModal, setShowCreateStanModal] = useState(false);
+
+    const [isConfirmDeleteStanOpen, setIsConfirmDeleteStanOpen] = useState(false);
+    const [stanZaBrisanje, setStanZaBrisanje] = useState(null);
+
     // State za brisanje uređaja
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deviceToDelete, setDeviceToDelete] = useState(null);
+
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [stanZaEdit, setStanZaEdit] = useState(null);
+
+    const [isManageStanariOpen, setIsManageStanariOpen] = useState(false);
+    const [stanZaStanare, setStanZaStanare] = useState(null);
 
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -28,14 +42,14 @@ const Dashboard = () => {
             const res = await api.get('/stanovi');
             const vlasnik = res.data.vlasnik || [];
             const stanar = res.data.stanar || [];
-            
+
             setVlasnikStanovi(vlasnik);
             setStanarStanovi(stanar);
 
             if (currentStanId) {
                 const sviStanovi = [...vlasnik, ...stanar];
                 const svezStan = sviStanovi.find(s => s.idStan === currentStanId);
-                
+
                 if (svezStan) {
                     setSelectedStan(svezStan);
                     if (currentSobaId) {
@@ -102,9 +116,56 @@ const Dashboard = () => {
         }
     };
 
+
+
     const handleLogout = async () => {
         try { await api.post('/logout'); }
         finally { localStorage.clear(); navigate('/login'); }
+    };
+
+    const handleDeleteClick = (stan) => {
+        setStanZaBrisanje(stan);
+        setIsConfirmDeleteStanOpen(true);
+    };
+
+    const handleConfirmDeleteStan = async () => {
+        try {
+            await api.delete(`/stanovi/${stanZaBrisanje.idStan}`);
+
+            if (selectedStan?.idStan === stanZaBrisanje.idStan) {
+                setSelectedStan(null);
+                setSelectedSoba(null);
+            }
+
+            setIsConfirmDeleteStanOpen(false);
+            setStanZaBrisanje(null);
+            fetchStanovi(); // Osvežava listu u Sidebaru
+        } catch (err) {
+            console.error("Greška:", err);
+        }
+    };
+
+    const handleEditClick = (stan) => {
+        setStanZaEdit(stan);
+        setIsEditModalOpen(true);
+    };
+
+    const handleManageStanariClick = (stan) => {
+        setStanZaStanare(stan);
+        setIsManageStanariOpen(true);
+    };
+
+    const handleStanarUpdate = async () => {
+        // 1. Povuci sve sveže podatke (ovo postavlja vlasnikStanovi i stanarStanovi)
+        await fetchStanovi(selectedStan?.idStan, selectedSoba?.rbSoba);
+
+        // pronadji taj stan u vec osvezenim listama
+        // modal dobija najnoviju verziju stana sa novim stanarom
+        setVlasnikStanovi((prevVlasnik) => {
+            const svezStan = prevVlasnik.find(s => s.idStan === stanZaStanare.idStan);
+            if (svezStan) setStanZaStanare(svezStan);
+            return prevVlasnik;
+        });
     };
 
     if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-blue-500 font-bold">Učitavanje...</div>;
@@ -116,6 +177,11 @@ const Dashboard = () => {
                 stanoviStanar={stanarStanovi}
                 onStanSelect={handleStanSelect}
                 selectedStanId={selectedStan?.idStan}
+                userRole={user?.uloga} // Prosleđujemo ulogu
+                onCreateStan={() => setShowCreateStanModal(true)} // Otvaramo modal za kreiranje
+                onDeleteStan={handleDeleteClick}
+                onEditStan={handleEditClick}           // Nova funkcija za edit stana
+                onManageUsersStan={handleManageStanariClick}
             />
 
             <div className="flex-1 flex flex-col">
@@ -143,18 +209,18 @@ const Dashboard = () => {
                                     <h1 className="text-4xl font-black mb-10 text-white/90">Sobe</h1>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {selectedStan.sobe?.map(soba => (
-                                            <SobaCard 
-                                                key={soba.rbSoba} 
-                                                soba={soba} 
-                                                onClick={() => handleSobaSelect(soba)} 
+                                            <SobaCard
+                                                key={soba.rbSoba}
+                                                soba={soba}
+                                                onClick={() => handleSobaSelect(soba)}
                                             />
                                         ))}
                                     </div>
                                 </>
                             ) : (
                                 <>
-                                    <button 
-                                        onClick={() => setSelectedSoba(null)} 
+                                    <button
+                                        onClick={() => setSelectedSoba(null)}
                                         className="mb-6 text-slate-400 hover:text-white text-sm flex items-center gap-2 transition-colors"
                                     >
                                         ← Nazad na sve sobe
@@ -165,9 +231,9 @@ const Dashboard = () => {
                                             <UredjajCard
                                                 key={stanje.rbStanje}
                                                 stanje={stanje}
-                                                userRole={user?.uloga} 
-                                                onToggle={handleToggle} 
-                                                onChange={handleSettingsChange} 
+                                                userRole={user?.uloga}
+                                                onToggle={handleToggle}
+                                                onChange={handleSettingsChange}
                                                 onDelete={(device) => { // otvaranje modal dialoga
                                                     setDeviceToDelete(device);
                                                     setShowDeleteModal(true);
@@ -176,7 +242,7 @@ const Dashboard = () => {
                                         ))}
 
                                         {user?.uloga !== 'dete' && (
-                                            <button 
+                                            <button
                                                 onClick={() => setShowAddModal(true)}
                                                 className="border-2 border-dashed border-slate-700 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-500/5 transition-all group min-h-[160px]"
                                             >
@@ -200,8 +266,8 @@ const Dashboard = () => {
             </div>
 
             {/* MODALI */}
-            <AddDeviceModal 
-                isOpen={showAddModal} 
+            <AddDeviceModal
+                isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
                 rbSoba={selectedSoba?.rbSoba}
                 onDeviceAdded={() => fetchStanovi(selectedStan.idStan, selectedSoba?.rbSoba)}
@@ -213,6 +279,34 @@ const Dashboard = () => {
                 onClose={() => setShowDeleteModal(false)}
                 onConfirm={handleDeleteUredjaj}
             />
+
+            <CreateStanModal
+                isOpen={showCreateStanModal}
+                onClose={() => setShowCreateStanModal(false)}
+                onStanCreated={() => fetchStanovi()}
+            />
+
+            <ConfirmDeleteStanModal
+                isOpen={isConfirmDeleteStanOpen}
+                onClose={() => setIsConfirmDeleteStanOpen(false)}
+                onConfirm={handleConfirmDeleteStan}
+                stanAdresa={stanZaBrisanje?.adresa}
+            />
+
+            <EditStanModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                stan={stanZaEdit}
+                onUpdate={() => fetchStanovi(selectedStan?.idStan, selectedSoba?.rbSoba)} // Osvežava listu nakon svake promene
+            />
+
+            <ManageStanariModal
+                isOpen={isManageStanariOpen}
+                onClose={() => setIsManageStanariOpen(false)}
+                stan={stanZaStanare}
+                onUpdate={handleStanarUpdate}
+            />
+
         </div>
     );
 };

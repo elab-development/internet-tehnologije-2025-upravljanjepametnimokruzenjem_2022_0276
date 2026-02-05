@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Korisnik;
 use App\Models\Stan;
 use Illuminate\Http\Request;
 
@@ -11,31 +12,38 @@ class StanController extends Controller
     {
         $user = auth()->user();
 
-        // Ključno je ugnjezditi sve relacije kroz 'with'
-        $vlasnik = $user->mojiStanoviVlasnik()
-            ->with(['sobe.stanjaUredjaja.uredjaj'])
+        // Učitaj stanove gde je vlasnik + njihove stanare (korisnike)
+        $vlasnikStanovi = Stan::with(['sobe.stanjaUredjaja.uredjaj', 'korisnici'])
+            ->where('vlasnik_id', $user->idKorisnik)
             ->get();
 
-        $stanar = $user->stanoviGdeBoravim()
-            ->with(['sobe.stanjaUredjaja.uredjaj'])
+        // Učitaj stanove gde je stanar
+        $stanarStanovi = $user->stanoviGdeBoravim()
+            ->with(['sobe.stanjaUredjaja.uredjaj', 'korisnici'])
             ->get();
 
         return response()->json([
-            'vlasnik' => $vlasnik,
-            'stanar' => $stanar
+            'vlasnik' => $vlasnikStanovi,
+            'stanar' => $stanarStanovi
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'adresa' => 'required|string',
+            'adresa' => 'required|string|max:255',
             'brojStana' => 'required|integer',
             'sprat' => 'required|integer',
-            'vlasnik_id' => 'required|exists:korisnik,idKorisnik',
         ]);
 
+        // Dodajemo ulogovanog korisnika kao vlasnika
+        $validated['vlasnik_id'] = auth()->id();
+
         $stan = Stan::create($validated);
+
+
+        $stan->load('sobe');
+
         return response()->json($stan, 201);
     }
 
@@ -48,17 +56,55 @@ class StanController extends Controller
     public function update(Request $request, $id)
     {
         $stan = Stan::findOrFail($id);
+        if ($stan->vlasnik_id !== auth()->id())
+            return response()->json(['message' => 'Niste vlasnik'], 403);
 
         $validated = $request->validate([
             'adresa' => 'sometimes|string|max:255',
             'brojStana' => 'sometimes|integer',
             'sprat' => 'sometimes|integer',
-            'vlasnik_id' => 'sometimes|exists:korisnik,idKorisnik',
         ]);
 
         $stan->update($validated);
+        return response()->json($stan->load('korisnici'));
+    }
 
-        return response()->json($stan);
+    public function ukloniStanara(Request $request, $idStan)
+    {
+        $stan = Stan::findOrFail($idStan);
+        if ($stan->vlasnik_id !== auth()->id())
+            return response()->json(['message' => 'Niste vlasnik'], 403);
+
+        // detach uklanja vezu iz pivot tabele
+        $stan->korisnici()->detach($request->korisnik_id);
+        return response()->json(['message' => 'Stanar uklonjen']);
+    }
+
+    public function dodajStanaraPoUsername(Request $request, $idStan)
+    {
+        $request->validate(['username' => 'required|string']);
+
+        $stan = Stan::findOrFail($idStan);
+        if ($stan->vlasnik_id !== auth()->id())
+            return response()->json(['message' => 'Niste vlasnik'], 403);
+
+        $korisnik = Korisnik::where('username', $request->username)->first();
+
+        if (!$korisnik) {
+            return response()->json(['message' => 'Korisnik sa tim username-om ne postoji'], 404);
+        }
+
+        // Provera da li je već stanar
+        if ($stan->korisnici()->where('korisnik_id', $korisnik->idKorisnik)->exists()) {
+            return response()->json(['message' => 'Korisnik je već stanar ovog objekta'], 422);
+        }
+
+        $stan->korisnici()->attach($korisnik->idKorisnik);
+
+        return response()->json([
+            'message' => 'Stanar uspešno dodat',
+            'korisnik' => $korisnik
+        ]);
     }
 
     public function destroy($id)

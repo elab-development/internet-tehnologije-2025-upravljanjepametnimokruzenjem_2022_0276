@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from './api/axios';
+import api from '../api/axios';
 
 const AddDeviceModal = ({ isOpen, onClose, onDeviceAdded, rbSoba }) => {
     const [sviModeliUredjaja, setSviModeliUredjaja] = useState([]);
@@ -40,7 +40,7 @@ const AddDeviceModal = ({ isOpen, onClose, onDeviceAdded, rbSoba }) => {
         let defaultPodesavanja = {};
 
         if (izabraniModel?.tipUredjaja === 'Klima') {
-            defaultPodesavanja = { temperatura: 20, mod: 'Hlađenje', brzina_ventilatora: 1 };
+            defaultPodesavanja = { temperatura: 20, mod: 'Hladjenje', brzina_ventilatora: 1 };
         } else if (izabraniModel?.tipUredjaja === 'Grejalica') {
             defaultPodesavanja = { temperatura: 20, jacina_grejaca: 1 };
         } else if (izabraniModel?.tipUredjaja === 'Svetlo') {

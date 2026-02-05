@@ -114,7 +114,7 @@ const UredjajCard = ({ stanje, onToggle, onChange, onDelete, userRole }) => {
                                         onChange={(e) => handleAction(onChange, stanje, { mod: e.target.value })}
                                         className="bg-transparent text-xs text-blue-300 font-bold w-full focus:outline-none cursor-pointer"
                                     >
-                                        {["Hlađenje", "Grejanje", "Eko"].map(m => <option key={m} value={m} className="bg-slate-800">{m}</option>)}
+                                        {["Hladjenje", "Grejanje", "Eko"].map(m => <option key={m} value={m} className="bg-slate-800">{m}</option>)}
                                     </select>
                                 </div>
                             </div>

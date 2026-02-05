@@ -12,25 +12,29 @@ const Register = () => {
         uloga: 'obican'
     });
     const [loading, setLoading] = useState(false);
+    const [greska, setGreska] = useState("");
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setGreska(""); // Resetuj greške pri svakom pokušaju
         if (loading) return;
 
         setLoading(true);
         try {
             const response = await api.post('/register', formData);
-            
+
             if (response.data.access_token) {
                 localStorage.setItem('access_token', response.data.access_token);
-                alert('Uspešna registracija!');
-                navigate('/dashboard'); 
+                navigate('/dashboard');
             }
-
         } catch (err) {
-            console.error('Greška pri registraciji:', err.response?.data);
-            alert('Greška! ', err.response?.data);
+            // Ako Laravel vrati 422, err.response.data sadrži validacione greške
+            if (err.response && err.response.status === 422) {
+                setGreska(err.response.data);
+            } else {
+                setGreska({ general: ["Došlo je do greške na serveru."] });
+            }
         } finally {
             setLoading(false);
         }
@@ -82,6 +86,20 @@ const Register = () => {
                         <option value="obican">Običan korisnik</option>
                     </select>
                 </div>
+
+                {/* Prikaz grešaka ako postoje */}
+                {greska && (
+                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded text-red-500 text-sm">
+                        <ul className="list-disc list-inside">
+                            {Object.keys(greska).map((key) => (
+                                greska[key].map((message, index) => (
+                                    <li key={`${key}-${index}`}>{message}</li>
+                                ))
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
 
                 <button
                     disabled={loading}
