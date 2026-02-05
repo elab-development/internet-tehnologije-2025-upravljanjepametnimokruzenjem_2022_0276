@@ -23,8 +23,10 @@ const Dashboard = () => {
 
     const [showAddModal, setShowAddModal] = useState(false);
 
+    // State za dodavanje stana - samo otvara modal
     const [showCreateStanModal, setShowCreateStanModal] = useState(false);
 
+    // State za brisanje stana
     const [isConfirmDeleteStanOpen, setIsConfirmDeleteStanOpen] = useState(false);
     const [stanZaBrisanje, setStanZaBrisanje] = useState(null);
 
@@ -32,17 +34,22 @@ const Dashboard = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deviceToDelete, setDeviceToDelete] = useState(null);
 
+    // State za edit stana
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [stanZaEdit, setStanZaEdit] = useState(null);
 
+    // State za izmenu stanara stana - Dodavanje/brisanje stanara
     const [isManageStanariOpen, setIsManageStanariOpen] = useState(false);
     const [stanZaMenjanjeStanara, setStanZaMenjanjeStanara] = useState(null);
 
+    // State za dodavanje sobe
     const [showCreateSobaModal, setShowCreateSobaModal] = useState(false);
 
+    // State za brisanje sobe
     const [isDeleteSobaModalOpen, setIsDeleteSobaModalOpen] = useState(false);
     const [sobaZaBrisanje, setSobaZaBrisanje] = useState(null);
 
+    // State za edit sobe
     const [isEditSobaModalOpen, setIsEditSobaModalOpen] = useState(false);
     const [sobaZaEdit, setSobaZaEdit] = useState(null);
 
@@ -120,7 +127,7 @@ const Dashboard = () => {
         if (!deviceToDelete) return;
         try {
             await api.delete(`/stanja-uredjaja/${deviceToDelete.rbStanje}`);
-            setShowDeleteModal(false);
+            setShowDeleteModal(false); // Zatvara modal za brisanje uredjaja iz sobe
             setDeviceToDelete(null);
             await fetchStanovi(selectedStan.idStan, selectedSoba?.rbSoba);
         } catch (err) {
@@ -141,38 +148,36 @@ const Dashboard = () => {
         }
     };
 
-    const handleDeleteClick = (stan) => {
+    // otvara modal za brisanje stana
+    const openDeleteStanModal = (stan) => {
         setStanZaBrisanje(stan);
         setIsConfirmDeleteStanOpen(true);
     };
 
-    const handleConfirmDeleteStan = async () => {
-        try {
-            await api.delete(`/stanovi/${stanZaBrisanje.idStan}`);
-
-            if (selectedStan?.idStan === stanZaBrisanje.idStan) {
-                setSelectedStan(null);
-                setSelectedSoba(null);
-            }
-
-            setIsConfirmDeleteStanOpen(false);
-            setStanZaBrisanje(null);
-            fetchStanovi(); // Osvežava listu u Sidebaru
-        } catch (err) {
-            console.error("Greška:", err);
+    // nakon sto je obrisan stan se zove
+    const handleAfterDeleteStan = (obrisanStanId) => {
+        if (selectedStan?.idStan === obrisanStanId) {
+            setSelectedStan(null);
+            setSelectedSoba(null);
         }
+
+        fetchStanovi();
     };
 
+
+    // otvara modal za edit stana
     const handleEditClick = (stan) => {
         setStanZaEdit(stan);
         setIsEditModalOpen(true);
     };
 
+    // otvara modal za izmenu stanara u stanu
     const handleManageStanariClick = (stan) => {
         setStanZaMenjanjeStanara(stan);
         setIsManageStanariOpen(true);
     };
 
+    // Radi refresh, da se odmah vidi promena stanara u stanu - na modalu
     const handleStanarUpdate = async () => {
         // 1. Povuci sve sveže podatke (ovo postavlja vlasnikStanovi i stanarStanovi)
         await fetchStanovi(selectedStan?.idStan, selectedSoba?.rbSoba);
@@ -186,11 +191,13 @@ const Dashboard = () => {
         });
     };
 
+    // Otvara modal za brisanje sobe
     const openDeleteSobaModal = (soba) => {
         setSobaZaBrisanje(soba);
         setIsDeleteSobaModalOpen(true);
     };
 
+    // Otvara modal za editovanje sobe
     const openEditSobaModal = (soba) => {
         setSobaZaEdit(soba);
         setIsEditSobaModalOpen(true);
@@ -208,12 +215,13 @@ const Dashboard = () => {
                 selectedStanId={selectedStan?.idStan}
                 userRole={user?.uloga} // Prosleđujemo ulogu
                 onCreateStan={() => setShowCreateStanModal(true)} // Otvaramo modal za kreiranje
-                onDeleteStan={handleDeleteClick}
+                onDeleteStan={openDeleteStanModal}
                 onEditStan={handleEditClick}           // Nova funkcija za edit stana
                 onManageUsersStan={handleManageStanariClick}
             />
 
             <div className="flex-1 flex flex-col">
+                {/* Header */}
                 <header className="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-slate-800/30">
                     <div>
                         <h2 className="text-sm text-slate-500 font-bold uppercase tracking-widest">
@@ -230,6 +238,7 @@ const Dashboard = () => {
                     </div>
                 </header>
 
+                {/*Centralni deo*/}
                 <main className="flex-1 overflow-y-auto p-8 bg-slate-900/50">
                     {selectedStan ? (
                         <div className="animate-in fade-in duration-500">
@@ -251,7 +260,7 @@ const Dashboard = () => {
 
                                         {user?.uloga !== 'dete' && selectedStan.vlasnik_id === user?.idKorisnik && (
                                             <button
-                                                onClick={() => setShowCreateSobaModal(true)}
+                                                onClick={() => setShowCreateSobaModal(true)} // Otvara se modal za dodavanje sobe
                                                 className="border-2 border-dashed border-slate-700 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-500/5 transition-all group min-h-[160px]"
                                             >
                                                 <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-2xl group-hover:bg-blue-600 transition-colors text-white">
@@ -281,7 +290,7 @@ const Dashboard = () => {
                                                 onChange={handleSettingsChange}
                                                 onDelete={(device) => {
                                                     setDeviceToDelete(device);
-                                                    setShowDeleteModal(true);
+                                                    setShowDeleteModal(true); // Prikazuje modal za brisanje uredjaja iz sobe
                                                 }}
                                             />
                                         ))}
@@ -310,6 +319,8 @@ const Dashboard = () => {
             </div>
 
             {/* MODALI */}
+
+            {/* Modal za dodavanje uredjaja u sobu */}
             <AddDeviceModal
                 isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
@@ -317,6 +328,7 @@ const Dashboard = () => {
                 onDeviceAdded={() => fetchStanovi(selectedStan.idStan, selectedSoba?.rbSoba)}
             />
 
+            {/* Modal za brisanje uredjaja iz sobe */}
             <DeleteConfirmModal
                 isOpen={showDeleteModal}
                 deviceName={deviceToDelete?.nazivUredjaja}
@@ -324,19 +336,25 @@ const Dashboard = () => {
                 onConfirm={handleDeleteUredjaj}
             />
 
+            {/* Modal za kreiranje stana */}
             <CreateStanModal
                 isOpen={showCreateStanModal}
                 onClose={() => setShowCreateStanModal(false)}
                 onStanCreated={() => fetchStanovi()}
             />
 
+            {/* Modal za brisanje stana */}
             <ConfirmDeleteStanModal
                 isOpen={isConfirmDeleteStanOpen}
-                onClose={() => setIsConfirmDeleteStanOpen(false)}
-                onConfirm={handleConfirmDeleteStan}
-                stanAdresa={stanZaBrisanje?.adresa}
+                onClose={() => {
+                    setIsConfirmDeleteStanOpen(false);
+                    setStanZaBrisanje(null);
+                }}
+                stan={stanZaBrisanje}
+                onDeleted={handleAfterDeleteStan}
             />
 
+            {/* Modal za edit stana  */}
             <EditStanModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
@@ -344,6 +362,7 @@ const Dashboard = () => {
                 onUpdate={() => fetchStanovi(selectedStan?.idStan, selectedSoba?.rbSoba)} // Osvežava listu nakon svake promene
             />
 
+            {/* Modal za izmenu stanara u stanu */}
             <ManageStanariModal
                 isOpen={isManageStanariOpen}
                 onClose={() => setIsManageStanariOpen(false)}
@@ -351,6 +370,7 @@ const Dashboard = () => {
                 onUpdate={handleStanarUpdate}
             />
 
+            {/* Modal za dodavanje sobe u stan */}
             <CreateSobaModal
                 isOpen={showCreateSobaModal}
                 onClose={() => setShowCreateSobaModal(false)}
@@ -358,6 +378,7 @@ const Dashboard = () => {
                 onSobaCreated={() => fetchStanovi(selectedStan.idStan)}
             />
 
+                {/* Modal za brisanje sobe */}
             <ConfirmDeleteSobaModal
                 isOpen={isDeleteSobaModalOpen}
                 onClose={() => setIsDeleteSobaModalOpen(false)}
@@ -365,6 +386,7 @@ const Dashboard = () => {
                 onConfirm={() => fetchStanovi(selectedStan.idStan)} // Samo osveži podatke nakon uspešnog API poziva u modalu
             />
 
+                {/* Modal za editovanje sobe */}
             <EditSobaModal
                 isOpen={isEditSobaModalOpen}
                 onClose={() => setIsEditSobaModalOpen(false)}

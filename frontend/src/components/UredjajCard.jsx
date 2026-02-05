@@ -158,8 +158,8 @@ const UredjajCard = ({ stanje, onToggle, onChange, onDelete, userRole }) => {
                                         <button
                                             key={id}
                                             onClick={() => handleAction(onChange, stanje, { boja: id })}
-                                            className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${bojeSvetla[id]} ${podesavanja.boja === id ? 'border-blue-500' : 'border-transparent'
-                                                }`}
+                                            className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${bojeSvetla[id]} 
+                                            ${podesavanja.boja === id ? 'border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.5)] ring-2 ring-offset-2 ring-offset-slate-800 ring-blue-500' : 'border-transparent opacity-70 hover:opacity-100' }`}
                                         />
                                     ))}
                                 </div>

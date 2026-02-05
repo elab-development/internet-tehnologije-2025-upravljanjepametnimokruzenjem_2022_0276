@@ -5,6 +5,7 @@ const api = axios.create({
 });
 
 // Ovo dodaje token u zaglavlje svakog zahteva ako on postoji u memoriji browsera
+// a trebalo bi da postoji nakon logina ili registera
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('access_token');
     if (token) {

@@ -12,12 +12,14 @@ class StanController extends Controller
     {
         $user = auth()->user();
 
-        // Učitaj stanove gde je vlasnik + njihove stanare (korisnike)
+        // Ucitavanje stanova za one gle je on vlasnik "join" sobe, stanja uredjaja i uredjaji, 
+        // kao i korisnici, sto su ovom slucaju stanari stana 
         $vlasnikStanovi = Stan::with(['sobe.stanjaUredjaja.uredjaj', 'korisnici'])
             ->where('vlasnik_id', $user->idKorisnik)
             ->get();
 
-        // Učitaj stanove gde je stanar
+        // Ucitavanje stanova gde je stanar
+        // isti joini
         $stanarStanovi = $user->stanoviGdeBoravim()
             ->with(['sobe.stanjaUredjaja.uredjaj', 'korisnici'])
             ->get();
