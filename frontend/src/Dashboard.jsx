@@ -1,15 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from './api/axios';
-import Sidebar from './Sidebar';
-import SobaCard from './SobaCard';
-import UredjajCard from './UredjajCard';
+import Sidebar from './components/Sidebar';
+import SobaCard from './components/SobaCard';
+import UredjajCard from './components/UredjajCard';
 import AddDeviceModal from './modals/AddDeviceModal';
 import DeleteConfirmModal from './modals/DeleteConfirmModal';
 import CreateStanModal from './modals/CreateStanModal';
 import ConfirmDeleteStanModal from './modals/ConfirmDeleteStanModal';
 import EditStanModal from './modals/EditStanModal';
 import ManageStanariModal from './modals/ManageStanariModal';
+import CreateSobaModal from './modals/CreateSobaModal';
+import ConfirmDeleteSobaModal from './modals/ConfirmDeleteSobaModal';
+import EditSobaModal from './modals/EditSobaModal';
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -19,6 +22,7 @@ const Dashboard = () => {
     const [selectedSoba, setSelectedSoba] = useState(null);
 
     const [showAddModal, setShowAddModal] = useState(false);
+
     const [showCreateStanModal, setShowCreateStanModal] = useState(false);
 
     const [isConfirmDeleteStanOpen, setIsConfirmDeleteStanOpen] = useState(false);
@@ -32,7 +36,16 @@ const Dashboard = () => {
     const [stanZaEdit, setStanZaEdit] = useState(null);
 
     const [isManageStanariOpen, setIsManageStanariOpen] = useState(false);
-    const [stanZaStanare, setStanZaStanare] = useState(null);
+    const [stanZaMenjanjeStanara, setStanZaMenjanjeStanara] = useState(null);
+
+    const [showCreateSobaModal, setShowCreateSobaModal] = useState(false);
+
+    const [isDeleteSobaModalOpen, setIsDeleteSobaModalOpen] = useState(false);
+    const [sobaZaBrisanje, setSobaZaBrisanje] = useState(null);
+
+    const [isEditSobaModalOpen, setIsEditSobaModalOpen] = useState(false);
+    const [sobaZaEdit, setSobaZaEdit] = useState(null);
+
 
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -119,8 +132,13 @@ const Dashboard = () => {
 
 
     const handleLogout = async () => {
-        try { await api.post('/logout'); }
-        finally { localStorage.clear(); navigate('/login'); }
+        try {
+            await api.post('/logout');
+        }
+        finally {
+            localStorage.clear();
+            navigate('/login');
+        }
     };
 
     const handleDeleteClick = (stan) => {
@@ -151,7 +169,7 @@ const Dashboard = () => {
     };
 
     const handleManageStanariClick = (stan) => {
-        setStanZaStanare(stan);
+        setStanZaMenjanjeStanara(stan);
         setIsManageStanariOpen(true);
     };
 
@@ -163,10 +181,21 @@ const Dashboard = () => {
         // modal dobija najnoviju verziju stana sa novim stanarom
         setVlasnikStanovi((prevVlasnik) => {
             const svezStan = prevVlasnik.find(s => s.idStan === stanZaStanare.idStan);
-            if (svezStan) setStanZaStanare(svezStan);
+            if (svezStan) setStanZaMenjanjeStanara(svezStan);
             return prevVlasnik;
         });
     };
+
+    const openDeleteSobaModal = (soba) => {
+        setSobaZaBrisanje(soba);
+        setIsDeleteSobaModalOpen(true);
+    };
+
+    const openEditSobaModal = (soba) => {
+        setSobaZaEdit(soba);
+        setIsEditSobaModalOpen(true);
+    };
+
 
     if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-blue-500 font-bold">Učitavanje...</div>;
 
@@ -207,14 +236,30 @@ const Dashboard = () => {
                             {!selectedSoba ? (
                                 <>
                                     <h1 className="text-4xl font-black mb-10 text-white/90">Sobe</h1>
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {selectedStan.sobe?.map(soba => (
                                             <SobaCard
                                                 key={soba.rbSoba}
                                                 soba={soba}
                                                 onClick={() => handleSobaSelect(soba)}
+                                                onDelete={openDeleteSobaModal}
+                                                onEdit={openEditSobaModal} // <--- Dodaj ovo
+                                                isVlasnik={user?.uloga !== 'dete' && selectedStan.vlasnik_id === user?.idKorisnik}
                                             />
                                         ))}
+
+                                        {user?.uloga !== 'dete' && selectedStan.vlasnik_id === user?.idKorisnik && (
+                                            <button
+                                                onClick={() => setShowCreateSobaModal(true)}
+                                                className="border-2 border-dashed border-slate-700 rounded-2xl p-5 flex flex-col items-center justify-center gap-3 hover:border-blue-500 hover:bg-blue-500/5 transition-all group min-h-[160px]"
+                                            >
+                                                <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-2xl group-hover:bg-blue-600 transition-colors text-white">
+                                                    +
+                                                </div>
+                                                <span className="text-slate-500 font-bold group-hover:text-blue-400">Nova Soba</span>
+                                            </button>
+                                        )}
                                     </div>
                                 </>
                             ) : (
@@ -234,13 +279,12 @@ const Dashboard = () => {
                                                 userRole={user?.uloga}
                                                 onToggle={handleToggle}
                                                 onChange={handleSettingsChange}
-                                                onDelete={(device) => { // otvaranje modal dialoga
+                                                onDelete={(device) => {
                                                     setDeviceToDelete(device);
                                                     setShowDeleteModal(true);
                                                 }}
                                             />
                                         ))}
-
                                         {user?.uloga !== 'dete' && (
                                             <button
                                                 onClick={() => setShowAddModal(true)}
@@ -303,8 +347,29 @@ const Dashboard = () => {
             <ManageStanariModal
                 isOpen={isManageStanariOpen}
                 onClose={() => setIsManageStanariOpen(false)}
-                stan={stanZaStanare}
+                stan={stanZaMenjanjeStanara}
                 onUpdate={handleStanarUpdate}
+            />
+
+            <CreateSobaModal
+                isOpen={showCreateSobaModal}
+                onClose={() => setShowCreateSobaModal(false)}
+                stanId={selectedStan?.idStan}
+                onSobaCreated={() => fetchStanovi(selectedStan.idStan)}
+            />
+
+            <ConfirmDeleteSobaModal
+                isOpen={isDeleteSobaModalOpen}
+                onClose={() => setIsDeleteSobaModalOpen(false)}
+                soba={sobaZaBrisanje}
+                onConfirm={() => fetchStanovi(selectedStan.idStan)} // Samo osveži podatke nakon uspešnog API poziva u modalu
+            />
+
+            <EditSobaModal
+                isOpen={isEditSobaModalOpen}
+                onClose={() => setIsEditSobaModalOpen(false)}
+                soba={sobaZaEdit}
+                onSobaUpdated={() => fetchStanovi(selectedStan.idStan)}
             />
 
         </div>

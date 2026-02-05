@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/stanovi/{idStan}/ukloni-stanara', [StanController::class, 'ukloniStanara']);
 
     Route::apiResource('korisnici', \App\Http\Controllers\KorisnikController::class);
-    Route::apiResource('stanovi', \App\Http\Controllers\StanController::class);
+    Route::apiResource('stanovi', StanController::class);
     Route::apiResource('sobe', \App\Http\Controllers\SobaController::class);
     Route::apiResource('uredjaji', \App\Http\Controllers\UredjajController::class);
     Route::apiResource('stanja-uredjaja', \App\Http\Controllers\StanjeUredjajaController::class);

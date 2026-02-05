@@ -16,11 +16,30 @@ class SobaController extends Controller
     // 2. Kreiraj novu sobu unutar stana
     public function store(Request $request)
     {
+        $user = auth()->user();
+
+        // 1. Provera uloge: Ako je dete, odmah prekidamo
+        if ($user->uloga === 'dete') {
+            return response()->json([
+                'message' => 'Korisnici sa ulogom "dete" nemaju dozvolu za dodavanje soba.'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'nazivSobe' => 'required|string|max:255',
-            'stan_id'   => 'required|exists:stan,idStan', // Proverava da li stan postoji
+            'stan_id' => 'required|exists:stan,idStan',
         ]);
 
+        // 2. Provera vlasništva: Nađi stan i vidi da li pripada ovom korisniku
+        $stan = \App\Models\Stan::findOrFail($request->stan_id);
+
+        if ($stan->vlasnik_id !== $user->idKorisnik) {
+            return response()->json([
+                'message' => 'Možete dodavati sobe samo u objekte čiji ste vlasnik.'
+            ], 403);
+        }
+
+        // 3. Kreiranje sobe (ako su gornji uslovi prošli)
         $soba = Soba::create($validated);
 
         return response()->json([
@@ -34,7 +53,7 @@ class SobaController extends Controller
     {
         // Na šemi soba "ima" stanja uređaja (crni romb), pa ih učitavamo ovde
         $soba = Soba::with(['stan', 'stanjaUredjaja.uredjaj'])->findOrFail($id);
-        
+
         return response()->json($soba);
     }
 
@@ -45,7 +64,7 @@ class SobaController extends Controller
 
         $validated = $request->validate([
             'nazivSobe' => 'sometimes|string|max:255',
-            'stan_id'   => 'sometimes|exists:stan,idStan',
+            'stan_id' => 'sometimes|exists:stan,idStan',
         ]);
 
         $soba->update($validated);

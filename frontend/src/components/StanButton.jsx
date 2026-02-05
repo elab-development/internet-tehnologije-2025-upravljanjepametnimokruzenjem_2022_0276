@@ -14,26 +14,23 @@ const StanButton = ({ stan, isActive, onClick, onDelete, onEdit, onManageUsers, 
                         : 'hover:bg-slate-800 text-slate-400'
                 }`}
             >
-
-                <p className="">ID:{stan.idStan}</p>
+                <p className="text-[10px] opacity-70">ID:{stan.idStan}</p>
                 <p className="font-bold truncate pr-20">{stan.adresa}</p>
                 <p className="text-[10px] opacity-50 uppercase tracking-tighter">
                     Sprat {stan.sprat} • Stan {stan.brojStana} 
                 </p>
             </button>
 
-            {/* Kontrole za vlasnika - vidljive na hoveru */}
-            {isVlasnik && (
-                <div className="absolute right-3 top-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+            {/* Kontrole za vlasnika - vidljive samo kada je isActive i na hoveru */}
+            {(isVlasnik && isActive) && (
+                <div className="absolute right-3 top-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-all z-10">
                     {/* Dugme za STANARE */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             onManageUsers(stan);
                         }}
-                        className={`p-1 transition-all ${
-                            isActive ? 'text-white/70 hover:text-white' : 'text-slate-500 hover:text-emerald-400'
-                        }`}
+                        className="p-1 text-white/60 hover:text-emerald-400 transition-colors"
                         title="Upravljaj stanarima"
                     >
                         <span style={{ fontSize: '18px' }}>👥</span>
@@ -45,9 +42,7 @@ const StanButton = ({ stan, isActive, onClick, onDelete, onEdit, onManageUsers, 
                             e.stopPropagation();
                             onEdit(stan);
                         }}
-                        className={`p-1 transition-all ${
-                            isActive ? 'text-white/70 hover:text-white' : 'text-slate-500 hover:text-blue-400'
-                        }`}
+                        className="p-1 text-white/60 hover:text-yellow-400 transition-colors"
                         title="Izmeni podatke o stanu"
                     >
                         <span style={{ fontSize: '18px' }}>⚙</span>
@@ -59,9 +54,8 @@ const StanButton = ({ stan, isActive, onClick, onDelete, onEdit, onManageUsers, 
                             e.stopPropagation();
                             onDelete(stan);
                         }}
-                        className={`p-1 transition-all ${
-                            isActive ? 'text-white/70 hover:text-white' : 'text-slate-500 hover:text-red-400'
-                        }`}
+                        // Ovde je ključ: uklonjen ternarni operator koji je forsirao belu boju
+                        className="p-1 text-white/60 hover:text-red-500 transition-colors"
                         title="Obriši stan"
                     >
                         <span style={{ fontSize: '16px', fontWeight: 'bold' }}>✕</span>
