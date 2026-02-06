@@ -185,7 +185,7 @@ const Dashboard = () => {
         // pronadji taj stan u vec osvezenim listama
         // modal dobija najnoviju verziju stana sa novim stanarom
         setVlasnikStanovi((prevVlasnik) => {
-            const svezStan = prevVlasnik.find(s => s.idStan === stanZaStanare.idStan);
+            const svezStan = prevVlasnik.find(s => s.idStan === stanZaMenjanjeStanara.idStan);
             if (svezStan) setStanZaMenjanjeStanara(svezStan);
             return prevVlasnik;
         });

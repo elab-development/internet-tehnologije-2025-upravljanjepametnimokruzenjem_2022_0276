@@ -54,7 +54,7 @@ const Login = () => {
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500 text-sm text-center">
                         {greska}
                     </div>
-                )}
+                )}  
 
                 <div className="mb-4">
                     <label className="block text-slate-400 mb-2">Korisničko ime</label>
