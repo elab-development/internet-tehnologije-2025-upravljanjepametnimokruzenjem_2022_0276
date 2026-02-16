@@ -53,6 +53,9 @@ const Dashboard = () => {
     const [isEditSobaModalOpen, setIsEditSobaModalOpen] = useState(false);
     const [sobaZaEdit, setSobaZaEdit] = useState(null);
 
+    const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+
+
 
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -203,6 +206,24 @@ const Dashboard = () => {
         setIsEditSobaModalOpen(true);
     };
 
+    const [editUserData, setEditUserData] = useState({
+        ime: user?.ime || '',
+        prezime: user?.prezime || '',
+        username: user?.username || ''
+    });
+
+
+    const handleUpdateProfile = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await api.patch(`/korisnici/${user.idKorisnik}`, editUserData);
+            setUser(res.data);
+            setShowEditProfileModal(false);
+            alert("Profil uspešno ažuriran!");
+        } catch (err) {
+            alert(err.response?.data?.message || "Greška pri ažuriranju profila.");
+        }
+    };
 
     if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-blue-500 font-bold">Učitavanje...</div>;
 
@@ -213,10 +234,10 @@ const Dashboard = () => {
                 stanoviStanar={stanarStanovi}
                 onStanSelect={handleStanSelect}
                 selectedStanId={selectedStan?.idStan}
-                userRole={user?.uloga} // Prosleđujemo ulogu
-                onCreateStan={() => setShowCreateStanModal(true)} // Otvaramo modal za kreiranje
+                userRole={user?.uloga}
+                onCreateStan={() => setShowCreateStanModal(true)}
                 onDeleteStan={openDeleteStanModal}
-                onEditStan={handleEditClick}           // Nova funkcija za edit stana
+                onEditStan={handleEditClick}
                 onManageUsersStan={handleManageStanariClick}
             />
 
@@ -231,7 +252,7 @@ const Dashboard = () => {
                     </div>
 
                     <div className="flex items-center gap-6">
-                        {/* NOVO: Admin dugme koje vidi samo admin */}
+                        {/*Admin dugme koje vidi samo admin */}
                         {user?.uloga === 'admin' && (
                             <button
                                 onClick={() => navigate('/admin')}
@@ -241,12 +262,21 @@ const Dashboard = () => {
                             </button>
                         )}
                     </div>
-
                     <div className="flex items-center gap-6">
                         <div className="text-right">
                             <p className="font-bold">{user?.ime} {user?.prezime}</p>
                             <p className="text-xs text-blue-400 uppercase">{user?.uloga}</p>
                         </div>
+                        <button
+                            onClick={() => {
+                                setEditUserData({ ime: user.ime, prezime: user.prezime, username: user.username });
+                                setShowEditProfileModal(true);
+                            }}
+                            className="p-2 bg-slate-700/50 hover:bg-blue-600/20 text-slate-400 hover:text-blue-400 rounded-lg transition-all border border-transparent hover:border-blue-500/30"
+                            title="Izmeni profil"
+                        >
+                            ✏️
+                        </button>
                         <button onClick={handleLogout} className="bg-slate-700 hover:bg-red-600 px-4 py-2 rounded-xl text-sm font-semibold transition-all">Odjavi se</button>
                     </div>
                 </header>
@@ -406,6 +436,61 @@ const Dashboard = () => {
                 soba={sobaZaEdit}
                 onSobaUpdated={() => fetchStanovi(selectedStan.idStan)}
             />
+
+            {showEditProfileModal && (
+                <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[150] flex items-center justify-center p-4">
+                    <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200 shadow-2xl">
+                        <h2 className="text-2xl font-black mb-6 uppercase tracking-tighter text-blue-500">Moj Profil</h2>
+                        <form onSubmit={handleUpdateProfile} className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase ml-2">Ime</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white mt-1"
+                                        value={editUserData.ime}
+                                        onChange={(e) => setEditUserData({ ...editUserData, ime: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase ml-2">Prezime</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white mt-1"
+                                        value={editUserData.prezime}
+                                        onChange={(e) => setEditUserData({ ...editUserData, prezime: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black text-slate-500 uppercase ml-2">Korisničko ime</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white mt-1 font-mono"
+                                    value={editUserData.username}
+                                    onChange={(e) => setEditUserData({ ...editUserData, username: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="pt-4 space-y-3">
+                                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/20">
+                                    SAČUVAJ IZMENE
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEditProfileModal(false)}
+                                    className="w-full text-slate-500 text-sm font-bold uppercase tracking-widest hover:text-slate-300 transition-colors"
+                                >
+                                    Odustani
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
