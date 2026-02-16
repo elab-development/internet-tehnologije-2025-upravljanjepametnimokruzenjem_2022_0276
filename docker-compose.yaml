@@ -1,0 +1,41 @@
+services:
+  # BACKEND
+  api:
+    build:
+      context: ./backend
+    container_name: pametna_kuca_api
+    restart: always
+    volumes:
+      - ./backend:/var/www
+    working_dir: /var/www 
+    environment:
+      DB_HOST: db
+      DB_DATABASE: iteh-projekat
+      DB_USERNAME: root
+      DB_PASSWORD: password
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "php artisan serve --host=0.0.0.0 --port=8000"
+
+  db:
+    image: mysql:8.0
+    container_name: pametna_kuca_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: iteh-projekat
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: pametna_kuca_front
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - api

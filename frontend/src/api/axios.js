@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8000/api', // Laravel radi na portu 8000
+    baseURL: "http://localhost:8000/api", 
 });
 
 // Ovo dodaje token u zaglavlje svakog zahteva ako on postoji u memoriji browsera
