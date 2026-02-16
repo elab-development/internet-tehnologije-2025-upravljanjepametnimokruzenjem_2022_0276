@@ -17,14 +17,14 @@ return new class extends Migration
             // Veza ka tabeli Korisnik
             $table->unsignedBigInteger('korisnik_id');
             $table->foreign('korisnik_id')
-                  ->references('idKorisnik') // Tvoj PK u tabeli korisnik
+                  ->references('idKorisnik') 
                   ->on('korisnik')
                   ->onDelete('cascade');
 
             // Veza ka tabeli Stan
             $table->unsignedBigInteger('stan_id');
             $table->foreign('stan_id')
-                  ->references('idStan') // Tvoj PK u tabeli stan
+                  ->references('idStan') 
                   ->on('stan')
                   ->onDelete('cascade');
 

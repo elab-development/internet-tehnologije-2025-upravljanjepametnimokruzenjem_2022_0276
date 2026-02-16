@@ -229,6 +229,19 @@ const Dashboard = () => {
                         </h2>
                         <h1 className="text-xl font-bold">{selectedStan?.adresa || 'Izaberite stan'}</h1>
                     </div>
+
+                    <div className="flex items-center gap-6">
+                        {/* NOVO: Admin dugme koje vidi samo admin */}
+                        {user?.uloga === 'admin' && (
+                            <button
+                                onClick={() => navigate('/admin')}
+                                className="flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/50 text-amber-500 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-amber-500/10"
+                            >
+                                🛡️ Admin Panel
+                            </button>
+                        )}
+                    </div>
+
                     <div className="flex items-center gap-6">
                         <div className="text-right">
                             <p className="font-bold">{user?.ime} {user?.prezime}</p>
@@ -378,7 +391,7 @@ const Dashboard = () => {
                 onSobaCreated={() => fetchStanovi(selectedStan.idStan)}
             />
 
-                {/* Modal za brisanje sobe */}
+            {/* Modal za brisanje sobe */}
             <ConfirmDeleteSobaModal
                 isOpen={isDeleteSobaModalOpen}
                 onClose={() => setIsDeleteSobaModalOpen(false)}
@@ -386,7 +399,7 @@ const Dashboard = () => {
                 onConfirm={() => fetchStanovi(selectedStan.idStan)} // Samo osveži podatke nakon uspešnog API poziva u modalu
             />
 
-                {/* Modal za editovanje sobe */}
+            {/* Modal za editovanje sobe */}
             <EditSobaModal
                 isOpen={isEditSobaModalOpen}
                 onClose={() => setIsEditSobaModalOpen(false)}

@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Koristimo sirovi SQL jer Laravelov ->change() nekad baguje sa enum tipom
+        
         DB::statement("ALTER TABLE uredjaj MODIFY COLUMN tipUredjaja ENUM('Klima', 'Svetlo', 'Grejalica') NOT NULL");
     }
 

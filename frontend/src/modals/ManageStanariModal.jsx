@@ -15,7 +15,7 @@ const ManageStanariModal = ({ isOpen, onClose, stan, onUpdate }) => {
         try {
             await api.post(`/stanovi/${stan.idStan}/dodaj-stanara`, { username });
             setUsername('');
-            onUpdate(); // refreshuje izabrani stan
+            onUpdate(); 
         } catch (err) {
             setError(err.response?.data?.message || 'Greška pri dodavanju');
         } finally {

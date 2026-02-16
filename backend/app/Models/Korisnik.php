@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable; // OVO JE KLJUČNA IZMENA
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Notifications\Notifiable; // Dodaj i ovo za svaki slučaj
+use Illuminate\Notifications\Notifiable; 
 use Laravel\Sanctum\HasApiTokens;
 
-// Umesto "extends Model", sada koristimo "extends Authenticatable"
 class Korisnik extends Authenticatable 
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -31,7 +30,7 @@ class Korisnik extends Authenticatable
         'updated_at'
     ];
 
-    // ... ostatak tvojih metoda (isAdmin, isDete, relacije) ostaje ISTI
+
     public function isAdmin() { return $this->uloga === 'admin'; }
     public function isDete() { return $this->uloga === 'dete'; }
 
@@ -42,6 +41,7 @@ class Korisnik extends Authenticatable
 
     public function stanoviGdeBoravim()
     {
-        return $this->belongsToMany(Stan::class, 'korisnik_stan', 'korisnik_id', 'stan_id');
+        return $this->
+        belongsToMany(Stan::class, 'korisnik_stan', 'korisnik_id', 'stan_id');
     }
 }

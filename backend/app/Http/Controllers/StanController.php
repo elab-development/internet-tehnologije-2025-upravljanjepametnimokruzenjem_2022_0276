@@ -12,7 +12,7 @@ class StanController extends Controller
     {
         $user = auth()->user();
 
-        // Ucitavanje stanova za one gle je on vlasnik "join" sobe, stanja uredjaja i uredjaji, 
+        // Ucitavanje stanova za one gde je on vlasnik "join" sobe, stanja uredjaja i uredjaji, 
         // kao i korisnici, sto su ovom slucaju stanari stana 
         $vlasnikStanovi = Stan::with(['sobe.stanjaUredjaja.uredjaj', 'korisnici'])
             ->where('vlasnik_id', $user->idKorisnik)
@@ -51,7 +51,6 @@ class StanController extends Controller
 
     public function show($id)
     {
-        // Koristimo idStan jer je to PK
         return response()->json(Stan::with(['vlasnik', 'sobe'])->findOrFail($id));
     }
 
@@ -117,6 +116,7 @@ class StanController extends Controller
         return response()->json(['message' => 'Stan obrisan']);
     }
 
+    // ne koristi se u ovoj verziji
     public function dodajStanara(Request $request, $idStan)
     {
         $stan = Stan::findOrFail($idStan);

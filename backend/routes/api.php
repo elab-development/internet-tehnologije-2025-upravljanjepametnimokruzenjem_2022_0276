@@ -5,7 +5,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StanController; // Dodaj import ako već nije tu
 
 Route::post('/login', [AuthController::class, 'login']);
+
 Route::post('/register', [AuthController::class, 'register']);
+
 Route::get('/ping', function() {
     return response()->json(['message' => 'pong']);
 });
@@ -18,7 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     
-    // NOVE RUTE ZA STANARE (Dodaj ih pre apiResource)
+    
     Route::post('/stanovi/{idStan}/dodaj-stanara', [StanController::class, 'dodajStanaraPoUsername']);
     Route::post('/stanovi/{idStan}/ukloni-stanara', [StanController::class, 'ukloniStanara']);
 
