@@ -27,22 +27,28 @@ const AdminPanel = () => {
     const [editingDeviceId, setEditingDeviceId] = useState(null);
     const [editDeviceData, setEditDeviceData] = useState({ marka: '', model: '', tipUredjaja: '' });
 
-
-
-
     useEffect(() => {
+        // Postavi naslov stranice
+        document.title = "SmartHome | Admin";
+
         const initAdmin = async () => {
+            setLoading(true); // Osiguraj da loading krene odmah
             try {
                 const userRes = await api.get('/me');
-                // Provera uloge - samo admin sme ovde
                 if (userRes.data.uloga !== 'admin') {
                     navigate('/dashboard');
                     return;
                 }
                 setUser(userRes.data);
-                fetchData('korisnici');
+                // Odmah učitaj korisnike nakon što potvrdiš da je admin
+                const res = await api.get('/korisnici');
+                setData(res.data);
+                setView('users');
             } catch (err) {
+                console.error("Auth error:", err);
                 navigate('/login');
+            } finally {
+                setLoading(false);
             }
         };
         initAdmin();
@@ -125,6 +131,16 @@ const AdminPanel = () => {
         }
     };
 
+    if (loading && !user) {
+        return (
+            <div className="h-screen bg-slate-900 flex items-center justify-center">
+                <div className="text-blue-500 font-bold animate-pulse text-2xl font-mono uppercase tracking-widest">
+                    Ucitavanje...
+                </div>
+            </div>
+        );
+    }
+
     if (!user) return null;
 
     return (
@@ -164,7 +180,7 @@ const AdminPanel = () => {
 
                 <div className="flex-1 overflow-y-auto p-8 bg-slate-900">
                     {loading ? (
-                        <div className="text-blue-500 font-bold animate-pulse text-center mt-20 text-xl font-mono">UČITAVANJE...</div>
+                        <div className="text-blue-500 font-bold animate-pulse text-center mt-20 text-xl font-mono uppercase">Učitavanje podataka...</div>
                     ) : (
                         <>
                             <div className="bg-slate-800/40 rounded-3xl border border-slate-700/50 overflow-hidden shadow-2xl backdrop-blur-sm">
@@ -236,7 +252,7 @@ const AdminPanel = () => {
                                                                     setEditingDeviceId(item.idUredjaj);
                                                                     setEditDeviceData({ marka: item.marka, model: item.model, tipUredjaja:item.tipUredjaja });
                                                                 }}
-                                                                className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                                                className="opacity-0 group-hover:opacity-100 p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-all"
                                                                 title="Izmeni uređaj"
                                                             >
                                                                 ✏️
@@ -257,7 +273,6 @@ const AdminPanel = () => {
                                 </table>
                             </div>
 
-                            {/* DUGME ZA DODAVANJE */}
                             <div className="flex justify-center mt-12 pb-10">
                                 <button
                                     onClick={() => view === 'users' ? setShowAddUserModal(true) : setShowAddDeviceModal(true)}
@@ -274,7 +289,7 @@ const AdminPanel = () => {
                 </div>
             </main>
 
-            {/* MODAL: DODAJ KORISNIKA */}
+            {/* MODALI OSTALI ISTI KAO TVOJI... */}
             {showAddUserModal && (
                 <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
                     <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200">
@@ -302,7 +317,6 @@ const AdminPanel = () => {
                 </div>
             )}
 
-            {/* MODAL: DODAJ UREĐAJ */}
             {showAddDeviceModal && (
                 <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
                     <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200">
@@ -328,7 +342,6 @@ const AdminPanel = () => {
                 </div>
             )}
 
-            {/* MODAL ZA IZMENU UREĐAJA */}
             {editingDeviceId && (
                 <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[110] flex items-center justify-center p-4">
                     <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200">
@@ -354,15 +367,6 @@ const AdminPanel = () => {
                                     onChange={(e) => setEditDeviceData({ ...editDeviceData, model: e.target.value })}
                                 />
                             </div>
-                            <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase ml-2 italic">Tip</label>
-                                <input
-                                    type="text"
-                                    disabled
-                                    value={data.find(d => d.idUredjaj === editingDeviceId)?.tipUredjaja || ''}
-                                    className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3 text-slate-500 mt-1 cursor-not-allowed"
-                                />
-                            </div>
                             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl mt-4 transition-all">
                                 SAČUVAJ IZMENE
                             </button>
@@ -373,7 +377,6 @@ const AdminPanel = () => {
                     </div>
                 </div>
             )}
-
         </div>
     );
 };

@@ -27,6 +27,8 @@ services:
     environment:
       MYSQL_DATABASE: iteh-projekat
       MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./db_data:/var/lib/mysql
     ports:
       - "3306:3306"
 
@@ -39,3 +41,6 @@ services:
       - "3000:80"
     depends_on:
       - api
+
+volumes:
+  db_data:
