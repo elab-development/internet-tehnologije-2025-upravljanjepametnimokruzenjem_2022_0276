@@ -28,11 +28,10 @@ const AdminPanel = () => {
     const [editDeviceData, setEditDeviceData] = useState({ marka: '', model: '', tipUredjaja: '' });
 
     useEffect(() => {
-        // Postavi naslov stranice
-        document.title = "SmartHome | Admin";
+        
 
         const initAdmin = async () => {
-            setLoading(true); // Osiguraj da loading krene odmah
+            setLoading(true); 
             try {
                 const userRes = await api.get('/me');
                 if (userRes.data.uloga !== 'admin') {
@@ -40,7 +39,6 @@ const AdminPanel = () => {
                     return;
                 }
                 setUser(userRes.data);
-                // Odmah učitaj korisnike nakon što potvrdiš da je admin
                 const res = await api.get('/korisnici');
                 setData(res.data);
                 setView('users');
@@ -289,7 +287,7 @@ const AdminPanel = () => {
                 </div>
             </main>
 
-            {/* MODALI OSTALI ISTI KAO TVOJI... */}
+            {/* MODALI */}
             {showAddUserModal && (
                 <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
                     <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200">
