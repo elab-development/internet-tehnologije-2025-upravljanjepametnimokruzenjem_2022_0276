@@ -5,20 +5,47 @@ namespace App\Http\Controllers;
 use App\Models\Soba;
 use Illuminate\Http\Request;
 
+/**
+ * @OA\Tag(name="Sobe", description="Upravljanje sobama unutar objekata")
+ */
 class SobaController extends Controller
 {
-    // 1. Izlistaj sve sobe (opciono sa informacijama o stanu)
+    /**
+     * @OA\Get(
+     * path="/api/sobe",
+     * summary="Izlistaj sve sobe",
+     * tags={"Sobe"},
+     * security={{"sanctum": {}}},
+     * @OA\Response(response=200, description="Uspešno učitane sobe sa podacima o stanu")
+     * )
+     */
     public function index()
     {
         return response()->json(Soba::with('stan')->get());
     }
 
-    // 2. Kreiraj novu sobu unutar stana
+    /**
+     * @OA\Post(
+     * path="/api/sobe",
+     * summary="Kreiraj novu sobu",
+     * tags={"Sobe"},
+     * security={{"sanctum": {}}},
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(
+     * @OA\Property(property="nazivSobe", type="string", example="Dnevna soba"),
+     * @OA\Property(property="stan_id", type="integer", example=1)
+     * )
+     * ),
+     * @OA\Response(response=201, description="Soba uspešno kreirana"),
+     * @OA\Response(response=403, description="Zabranjeno (Uloga 'dete' ili niste vlasnik stana)"),
+     * @OA\Response(response=422, description="Validaciona greška")
+     * )
+     */
     public function store(Request $request)
     {
         $user = auth()->user();
 
-        // 1. Provera uloge: Ako je dete, odmah prekidamo
         if ($user->uloga === 'dete') {
             return response()->json([
                 'message' => 'Korisnici sa ulogom "dete" nemaju dozvolu za dodavanje soba.'
@@ -30,7 +57,6 @@ class SobaController extends Controller
             'stan_id' => 'required|exists:stan,idStan',
         ]);
 
-        // 2. Provera vlasništva: Nađi stan i vidi da li pripada ovom korisniku
         $stan = \App\Models\Stan::findOrFail($request->stan_id);
 
         if ($stan->vlasnik_id !== $user->idKorisnik) {
@@ -39,7 +65,6 @@ class SobaController extends Controller
             ], 403);
         }
 
-        // 3. Kreiranje sobe (ako su gornji uslovi prošli)
         $soba = Soba::create($validated);
 
         return response()->json([
@@ -48,16 +73,39 @@ class SobaController extends Controller
         ], 201);
     }
 
-    // 3. Prikaži jednu sobu i sva stanja uređaja u njoj
+    /**
+     * @OA\Get(
+     * path="/api/sobe/{id}",
+     * summary="Prikaži detalje sobe i uređaje",
+     * tags={"Sobe"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\Response(response=200, description="Prikaz sobe sa stanjima svih uređaja"),
+     * @OA\Response(response=404, description="Soba nije pronađena")
+     * )
+     */
     public function show($id)
     {
-        // Na šemi soba "ima" stanja uređaja (crni romb), pa ih učitavamo ovde
         $soba = Soba::with(['stan', 'stanjaUredjaja.uredjaj'])->findOrFail($id);
-
         return response()->json($soba);
     }
 
-    // 4. Ažuriraj sobu
+    /**
+     * @OA\Put(
+     * path="/api/sobe/{id}",
+     * summary="Ažuriraj podatke o sobi",
+     * tags={"Sobe"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\RequestBody(
+     * @OA\JsonContent(
+     * @OA\Property(property="nazivSobe", type="string", example="Spavaća soba"),
+     * @OA\Property(property="stan_id", type="integer")
+     * )
+     * ),
+     * @OA\Response(response=200, description="Soba uspešno ažurirana")
+     * )
+     */
     public function update(Request $request, $id)
     {
         $soba = Soba::findOrFail($id);
@@ -72,7 +120,16 @@ class SobaController extends Controller
         return response()->json($soba);
     }
 
-    // 5. Obriši sobu
+    /**
+     * @OA\Delete(
+     * path="/api/sobe/{id}",
+     * summary="Obriši sobu",
+     * tags={"Sobe"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\Response(response=200, description="Soba obrisana")
+     * )
+     */
     public function destroy($id)
     {
         $soba = Soba::findOrFail($id);

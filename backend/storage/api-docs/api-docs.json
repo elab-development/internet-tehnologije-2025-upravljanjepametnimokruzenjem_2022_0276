@@ -1,0 +1,1132 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Sistem Pametne Kuće API",
+        "description": "API dokumentacija za upravljanje uređajima, korisnicima i ulogama (Admin, Običan, Dete).",
+        "contact": {
+            "email": "admin@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Lokalni razvojni server"
+        }
+    ],
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Autentifikacija"
+                ],
+                "summary": "Prijava korisnika",
+                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "example": "admin"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Uspešna prijava",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Pogrešni podaci"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Autentifikacija"
+                ],
+                "summary": "Odjava korisnika",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "200": {
+                        "description": "Uspešna odjava"
+                    },
+                    "401": {
+                        "description": "Neautorizovan pristup"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Autentifikacija"
+                ],
+                "summary": "Registracija novog korisnika",
+                "operationId": "8a56853624e025573120a09a4c75d468",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ime": {
+                                        "type": "string",
+                                        "example": "Marko"
+                                    },
+                                    "prezime": {
+                                        "type": "string",
+                                        "example": "Markovic"
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "example": "marko123"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "uloga": {
+                                        "type": "string",
+                                        "enum": [
+                                            "admin",
+                                            "dete",
+                                            "obican"
+                                        ],
+                                        "example": "obican"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Korisnik uspešno kreiran"
+                    },
+                    "422": {
+                        "description": "Validaciona greška"
+                    }
+                }
+            }
+        },
+        "/api/korisnici": {
+            "get": {
+                "tags": [
+                    "Korisnici"
+                ],
+                "summary": "Prikaz svih korisnika",
+                "operationId": "5061f6d16eb244e5b6757a44af053383",
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitana lista korisnika"
+                    },
+                    "401": {
+                        "description": "Neautorizovan pristup"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Korisnici"
+                ],
+                "summary": "Kreiranje novog korisnika",
+                "operationId": "b09c5a6427c0ae9a7ce73389ef77acf3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ime": {
+                                        "type": "string",
+                                        "example": "Petar"
+                                    },
+                                    "prezime": {
+                                        "type": "string",
+                                        "example": "Petrović"
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "example": "petar123"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "lozinka123"
+                                    },
+                                    "uloga": {
+                                        "type": "string",
+                                        "enum": [
+                                            "admin",
+                                            "obican",
+                                            "dete"
+                                        ],
+                                        "example": "obican"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Korisnik uspešno kreiran"
+                    },
+                    "422": {
+                        "description": "Greška pri validaciji"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/korisnici/{id}": {
+            "get": {
+                "tags": [
+                    "Korisnici"
+                ],
+                "summary": "Prikaz detalja jednog korisnika",
+                "operationId": "10e4efcd04abd49ded36c98531c4ea4b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID korisnika",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno pronađen korisnik"
+                    },
+                    "404": {
+                        "description": "Korisnik nije pronađen"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Korisnici"
+                ],
+                "summary": "Izmena podataka o korisniku",
+                "operationId": "ce20b76969d640b2ad7066574cc652e4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID korisnika",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ime": {
+                                        "type": "string"
+                                    },
+                                    "prezime": {
+                                        "type": "string"
+                                    },
+                                    "username": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "uloga": {
+                                        "type": "string",
+                                        "enum": [
+                                            "admin",
+                                            "obican",
+                                            "dete"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Podaci uspešno ažurirani"
+                    },
+                    "404": {
+                        "description": "Korisnik nije pronađen"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Korisnici"
+                ],
+                "summary": "Brisanje korisnika",
+                "operationId": "fb63425b86922025564614af57838826",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID korisnika",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Korisnik uspešno obrisan"
+                    },
+                    "404": {
+                        "description": "Korisnik nije pronađen"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/sobe": {
+            "get": {
+                "tags": [
+                    "Sobe"
+                ],
+                "summary": "Izlistaj sve sobe",
+                "operationId": "4fd56ae0be9a2b33f980a1f79bc35d64",
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitane sobe sa podacima o stanu"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Sobe"
+                ],
+                "summary": "Kreiraj novu sobu",
+                "operationId": "37e7312ee496f8c85febd2ef6ecc79e7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nazivSobe": {
+                                        "type": "string",
+                                        "example": "Dnevna soba"
+                                    },
+                                    "stan_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Soba uspešno kreirana"
+                    },
+                    "403": {
+                        "description": "Zabranjeno (Uloga 'dete' ili niste vlasnik stana)"
+                    },
+                    "422": {
+                        "description": "Validaciona greška"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/sobe/{id}": {
+            "get": {
+                "tags": [
+                    "Sobe"
+                ],
+                "summary": "Prikaži detalje sobe i uređaje",
+                "operationId": "235a56609171d96d734901fdca81f5c2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Prikaz sobe sa stanjima svih uređaja"
+                    },
+                    "404": {
+                        "description": "Soba nije pronađena"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Sobe"
+                ],
+                "summary": "Ažuriraj podatke o sobi",
+                "operationId": "94b938d9b8b309331cdbc0753efaa09e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nazivSobe": {
+                                        "type": "string",
+                                        "example": "Spavaća soba"
+                                    },
+                                    "stan_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Soba uspešno ažurirana"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Sobe"
+                ],
+                "summary": "Obriši sobu",
+                "operationId": "c58b1f0514c62a7938ee1137a8a0fbad",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Soba obrisana"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/stanovi": {
+            "get": {
+                "tags": [
+                    "Objekti (Stanovi)"
+                ],
+                "summary": "Prikaz svih objekata korisnika (gde je vlasnik ili stanar)",
+                "operationId": "63dd2aea63397ccdbcd4c31b1199a497",
+                "responses": {
+                    "200": {
+                        "description": "Uspešno vraćeni podaci o objektima"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Objekti (Stanovi)"
+                ],
+                "summary": "Dodaj novi stambeni objekat",
+                "operationId": "97748c0c151604e8e1f33f7282019dc3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "adresa": {
+                                        "type": "string",
+                                        "example": "Bulevar Kralja Aleksandra 12"
+                                    },
+                                    "brojStana": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "sprat": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Objekat kreiran"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/stanovi/{id}": {
+            "get": {
+                "tags": [
+                    "Objekti (Stanovi)"
+                ],
+                "summary": "Prikaz detalja objekta",
+                "operationId": "a02c6da9952b76c6a9917511165f9309",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno vraćen objekat"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Objekti (Stanovi)"
+                ],
+                "summary": "Izmena podataka o objektu",
+                "operationId": "a90a1a9268615a6efe22a0d9ea836fc7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno ažurirano"
+                    },
+                    "403": {
+                        "description": "Niste vlasnik objekta"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Objekti (Stanovi)"
+                ],
+                "summary": "Obriši objekat",
+                "operationId": "595ad0a68c70a79bd4a57a470f130181",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Objekat obrisan"
+                    },
+                    "404": {
+                        "description": "Objekat nije pronađen"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/stanovi/{idStan}/ukloni-stanara": {
+            "post": {
+                "tags": [
+                    "Objekti (Stanovi)"
+                ],
+                "summary": "Ukloni stanara iz objekta",
+                "operationId": "3af2cde9c043592c8da222608bab8146",
+                "parameters": [
+                    {
+                        "name": "idStan",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "korisnik_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Stanar uklonjen"
+                    },
+                    "403": {
+                        "description": "Niste vlasnik objekta"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/stanovi/{idStan}/dodaj-stanara": {
+            "post": {
+                "tags": [
+                    "Objekti (Stanovi)"
+                ],
+                "summary": "Dodaj stanara u objekat preko korisničkog imena",
+                "operationId": "24c8fef445d05da0f1e3bc9c9322ac00",
+                "parameters": [
+                    {
+                        "name": "idStan",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "example": "marko123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Stanar uspešno dodat"
+                    },
+                    "403": {
+                        "description": "Niste vlasnik objekta"
+                    },
+                    "404": {
+                        "description": "Korisnik ne postoji"
+                    },
+                    "422": {
+                        "description": "Korisnik je već stanar"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/stanje-uredjaja": {
+            "get": {
+                "tags": [
+                    "Stanja Uređaja (Komande)"
+                ],
+                "summary": "Istorija i trenutna stanja svih uređaja",
+                "operationId": "a091b7a56dc3a5457571138bedeb2b5f",
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitana stanja"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Stanja Uređaja (Komande)"
+                ],
+                "summary": "Dodaj uređaj u sobu (kreiraj početno stanje)",
+                "operationId": "d7f1d9d7e0b8d8ee0ea086b33f26b7cc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nazivUredjaja": {
+                                        "type": "string",
+                                        "example": "Klima Dnevna"
+                                    },
+                                    "ukljucen": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "podesavanja": {
+                                        "type": "object",
+                                        "example": {
+                                            "temp": 24,
+                                            "mod": "hladjenje"
+                                        }
+                                    },
+                                    "uredjaj_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "soba_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Stanje uspešno kreirano"
+                    },
+                    "422": {
+                        "description": "Validaciona greška"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/stanje-uredjaja/{id}": {
+            "put": {
+                "tags": [
+                    "Stanja Uređaja (Komande)"
+                ],
+                "summary": "Izvrši komandu (Promeni stanje/podešavanja uređaja)",
+                "description": "Koristi se za paljenje/gašenje ili promenu parametara poput temperature.",
+                "operationId": "9232ebed6fcbf12e2d2ad4cbe3c3ba96",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ukljucen": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "podesavanja": {
+                                        "type": "object",
+                                        "example": {
+                                            "temp": 22
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Komanda uspešno izvršena"
+                    },
+                    "404": {
+                        "description": "Uređaj nije pronađen"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Stanja Uređaja (Komande)"
+                ],
+                "summary": "Ukloni uređaj iz sobe (briše stanje)",
+                "operationId": "d6520bd1f066c28c71aba655fb1b611a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stanje obrisano"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/uredjaji": {
+            "get": {
+                "tags": [
+                    "Katalog Uređaja"
+                ],
+                "summary": "Vraća listu svih dostupnih uređaja u katalogu",
+                "operationId": "56c56d452fe3b9b82d0c9917cb27a36e",
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitana lista uređaja"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Katalog Uređaja"
+                ],
+                "summary": "Dodavanje novog tipa uređaja u katalog",
+                "operationId": "3676b73f7e271be294b0021c0a9484c4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "marka": {
+                                        "type": "string",
+                                        "example": "Samsung"
+                                    },
+                                    "model": {
+                                        "type": "string",
+                                        "example": "WindFree Gen2"
+                                    },
+                                    "tipUredjaja": {
+                                        "type": "string",
+                                        "example": "Klima"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Uređaj uspešno dodat u katalog"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/uredjaji/{id}": {
+            "get": {
+                "tags": [
+                    "Katalog Uređaja"
+                ],
+                "summary": "Detalji o uređaju sa istorijom stanja",
+                "operationId": "b5afa3ae38c22e3134ec344e58d58b16",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitani detalji uređaja"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Katalog Uređaja"
+                ],
+                "summary": "Izmena informacija o uređaju u katalogu",
+                "operationId": "305b14da41234849b86579ac3a7ff8ec",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "marka": {
+                                        "type": "string"
+                                    },
+                                    "model": {
+                                        "type": "string"
+                                    },
+                                    "tipUredjaja": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Klima",
+                                            "Svetlo",
+                                            "Grejalica"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Uređaj uspešno ažuriran"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Katalog Uređaja"
+                ],
+                "summary": "Brisanje uređaja iz kataloga",
+                "operationId": "752467abc2a46507513a97bce7936caf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uređaj obrisan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Ovde unesite access_token dobijen nakon logovanja.",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Autentifikacija",
+            "description": "Operacije za prijavu, registraciju i odjavu"
+        },
+        {
+            "name": "Korisnici",
+            "description": "Upravljanje korisnicima sistema (Admin operacije)"
+        },
+        {
+            "name": "Sobe",
+            "description": "Upravljanje sobama unutar objekata"
+        },
+        {
+            "name": "Objekti (Stanovi)",
+            "description": "Upravljanje stambenim objektima i stanarima"
+        },
+        {
+            "name": "Stanja Uređaja (Komande)",
+            "description": "Upravljanje statusima i izvršavanje komandi nad uređajima"
+        },
+        {
+            "name": "Katalog Uređaja",
+            "description": "Upravljanje tipovima uređaja dostupnim u sistemu"
+        }
+    ]
+}

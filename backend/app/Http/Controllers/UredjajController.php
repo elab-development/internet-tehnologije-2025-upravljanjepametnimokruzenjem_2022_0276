@@ -5,15 +5,42 @@ namespace App\Http\Controllers;
 use App\Models\Uredjaj;
 use Illuminate\Http\Request;
 
+/**
+ * @OA\Tag(name="Katalog Uređaja", description="Upravljanje tipovima uređaja dostupnim u sistemu")
+ */
 class UredjajController extends Controller
 {
-    // 1. Vraća listu svih dostupnih uređaja u sistemu
+    /**
+     * @OA\Get(
+     * path="/api/uredjaji",
+     * summary="Vraća listu svih dostupnih uređaja u katalogu",
+     * tags={"Katalog Uređaja"},
+     * security={{"sanctum": {}}},
+     * @OA\Response(response=200, description="Uspešno učitana lista uređaja")
+     * )
+     */
     public function index()
     {
         return response()->json(Uredjaj::all());
     }
 
-    // 2. Dodavanje novog tipa uređaja u katalog (npr. Samsung Klima)
+    /**
+     * @OA\Post(
+     * path="/api/uredjaji",
+     * summary="Dodavanje novog tipa uređaja u katalog",
+     * tags={"Katalog Uređaja"},
+     * security={{"sanctum": {}}},
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(
+     * @OA\Property(property="marka", type="string", example="Samsung"),
+     * @OA\Property(property="model", type="string", example="WindFree Gen2"),
+     * @OA\Property(property="tipUredjaja", type="string", example="Klima")
+     * )
+     * ),
+     * @OA\Response(response=201, description="Uređaj uspešno dodat u katalog")
+     * )
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -27,15 +54,39 @@ class UredjajController extends Controller
         return response()->json($uredjaj, 201);
     }
 
-    // 3. Detalji o uređaju sa svim njegovim stanjima (istorija)
+    /**
+     * @OA\Get(
+     * path="/api/uredjaji/{id}",
+     * summary="Detalji o uređaju sa istorijom stanja",
+     * tags={"Katalog Uređaja"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\Response(response=200, description="Uspešno učitani detalji uređaja")
+     * )
+     */
     public function show($id)
     {
-        // Koristi idUredjaj jer smo ga tako definisali u modelu
         $uredjaj = Uredjaj::with('stanja')->findOrFail($id);
         return response()->json($uredjaj);
     }
 
-    // 4. Izmena informacija o uređaju
+    /**
+     * @OA\Put(
+     * path="/api/uredjaji/{id}",
+     * summary="Izmena informacija o uređaju u katalogu",
+     * tags={"Katalog Uređaja"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\RequestBody(
+     * @OA\JsonContent(
+     * @OA\Property(property="marka", type="string"),
+     * @OA\Property(property="model", type="string"),
+     * @OA\Property(property="tipUredjaja", type="string", enum={"Klima", "Svetlo", "Grejalica"})
+     * )
+     * ),
+     * @OA\Response(response=200, description="Uređaj uspešno ažuriran")
+     * )
+     */
     public function update(Request $request, $id)
     {
         $uredjaj = Uredjaj::findOrFail($id);
@@ -50,7 +101,16 @@ class UredjajController extends Controller
         return response()->json($uredjaj);
     }
 
-    // 5. Brisanje uređaja iz sistema
+    /**
+     * @OA\Delete(
+     * path="/api/uredjaji/{id}",
+     * summary="Brisanje uređaja iz kataloga",
+     * tags={"Katalog Uređaja"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     * @OA\Response(response=200, description="Uređaj obrisan")
+     * )
+     */
     public function destroy($id)
     {
         $uredjaj = Uredjaj::findOrFail($id);
