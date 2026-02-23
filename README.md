@@ -10,7 +10,7 @@ Aplikacija je izgrađena korišćenjem modernog tehnološkog stack-a:
 - **Dokumentacija:** Swagger (OpenAPI)
 - **Infrastruktura:** Docker & Docker Compose
 
-## 🛠️ Instalacija i pokretanje (Docker)
+## Instalacija i pokretanje (Docker)
 Najbrži način da pokrenete projekat je korišćenjem Docker-a.
 
 1. **Kloniranje repozitorijuma:**

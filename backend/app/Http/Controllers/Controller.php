@@ -11,7 +11,7 @@ use Illuminate\Routing\Controller as BaseController;
  * @OA\Info(
  * title="Sistem Pametne Kuće API",
  * version="1.0.0",
- * description="API dokumentacija za upravljanje pametnim okruženjem.",
+ * description="API dokumentacija sistema za upravljanje pametnim uredjajima.",
  * @OA\Contact(
  * email="admin@example.com"
  * )

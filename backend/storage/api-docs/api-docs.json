@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Sistem Pametne Kuće API",
-        "description": "API dokumentacija za upravljanje uređajima, korisnicima i ulogama (Admin, Običan, Dete).",
+        "description": "API dokumentacija sistema za upravljanje pametnim uredjajima.",
         "contact": {
             "email": "admin@example.com"
         },
