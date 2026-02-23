@@ -15,8 +15,8 @@ Najbrži način da pokrenete projekat je korišćenjem Docker-a.
 
 1. **Kloniranje repozitorijuma:**
    
-    git clone <url>
-    cd <ime-foldera>
+    git clone parametar:url
+    cd parametar:ime foldera
 2. **Pokretanje aplikacije**
     docker compose up -d --build
 3. **Pristup aplikaciji**
