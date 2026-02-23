@@ -58,6 +58,9 @@ const Dashboard = () => {
 
 
     const [loading, setLoading] = useState(true);
+
+    const [odjavljivanje, setOdjavljivanje] = useState(false);
+
     const navigate = useNavigate();
 
     const fetchStanovi = useCallback(async (currentStanId, currentSobaId) => {
@@ -143,10 +146,12 @@ const Dashboard = () => {
 
     const handleLogout = async () => {
         try {
+            setOdjavljivanje(true);
             await api.post('/logout');
         }
         finally {
             localStorage.clear();
+            setOdjavljivanje(false);
             navigate('/login');
         }
     };
@@ -277,7 +282,7 @@ const Dashboard = () => {
                         >
                             ✏️
                         </button>
-                        <button onClick={handleLogout} className="bg-slate-700 hover:bg-red-600 px-4 py-2 rounded-xl text-sm font-semibold transition-all">Odjavi se</button>
+                        <button disabled={odjavljivanje} onClick={handleLogout} className="bg-slate-700 hover:bg-red-600 disabled:bg-red-900 disabled:opacity-50 disabled:cursor-wait px-4 py-2 rounded-xl text-sm font-semibold transition-all">{odjavljivanje ? `Odjavljivanje...` : `Odjavi se`}</button>
                     </div>
                 </header>
 

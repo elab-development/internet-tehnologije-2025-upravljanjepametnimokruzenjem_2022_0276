@@ -7,6 +7,8 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 
+
+
 /**
  * @OA\Info(
  * title="Sistem Pametne Kuće API",
@@ -33,6 +35,7 @@ use Illuminate\Routing\Controller as BaseController;
  * )
  */
 class Controller extends BaseController
-{
+{   
+    //php artisan l5-swagger:generate
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 }
